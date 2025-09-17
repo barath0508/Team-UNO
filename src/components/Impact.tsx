@@ -197,8 +197,15 @@ const Impact: React.FC = () => {
                   {stat.label}
                 </p>
 
+                {/* CSS animated shape */}
+                <motion.div
+                  className="absolute top-2 right-2 w-8 h-8 border border-emerald-400/30 rounded-full"
+                  animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+                
                 {/* Enhanced floating particles */}
-                {[...Array(3)].map((_, i) => (
+                {[...Array(2)].map((_, i) => (
                   <motion.div
                     key={i}
                     animate={{
@@ -215,8 +222,8 @@ const Impact: React.FC = () => {
                     }}
                     className={`absolute w-1 h-1 bg-gradient-to-r ${stat.color} rounded-full`}
                     style={{
-                      top: `${20 + i * 15}%`,
-                      right: `${15 + i * 10}%`,
+                      top: `${20 + i * 20}%`,
+                      left: `${15 + i * 10}%`,
                     }}
                   />
                 ))}
