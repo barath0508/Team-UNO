@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -33,6 +33,16 @@ const HomePage = () => (
   </>
 );
 
+const ImpactPledgeWrapper = () => {
+  const navigate = useNavigate();
+  return <ImpactPledge onComplete={() => navigate('/location-setup')} />;
+};
+
+const LocationSetupWrapper = () => {
+  const navigate = useNavigate();
+  return <LocationSetup onComplete={() => navigate('/dashboard')} />;
+};
+
 function App() {
   return (
     <Router>
@@ -41,8 +51,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/pledge" element={<ImpactPledge onComplete={() => window.location.href = '/location-setup'} />} />
-          <Route path="/location-setup" element={<LocationSetup onComplete={() => window.location.href = '/dashboard'} />} />
+          <Route path="/pledge" element={<ImpactPledgeWrapper />} />
+          <Route path="/location-setup" element={<LocationSetupWrapper />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/eco-points" element={<EcoPoints />} />
           <Route path="/rewards" element={<RewardsHub />} />
