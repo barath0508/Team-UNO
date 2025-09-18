@@ -4,8 +4,28 @@ CREATE TABLE profiles (
   email TEXT,
   full_name TEXT,
   mobile TEXT,
+  location TEXT,
+  state TEXT,
+  district TEXT,
+  eco_points INTEGER DEFAULT 0,
+  level INTEGER DEFAULT 1,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create location_tasks table
+CREATE TABLE location_tasks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  location TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  points INTEGER DEFAULT 0,
+  difficulty TEXT,
+  category TEXT,
+  local_context TEXT,
+  created_by_ai BOOLEAN DEFAULT TRUE,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable RLS (Row Level Security)

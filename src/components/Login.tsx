@@ -17,15 +17,30 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
         setError(error.message);
-      } else {
-        navigate('/dashboard');
+      } else if (data.user) {
+        // Check if first login
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('has_taken_pledge, first_login_completed')
+          .eq('id', data.user.id)
+          .single();
+
+        if (!profile?.has_taken_pledge) {
+          navigate('/pledge');
+        } else if (!profile?.location) {
+          navigate('/location-setup');
+        } else if (!profile?.first_login_completed) {
+          navigate('/avatar-setup');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       setError('Authentication service unavailable. Please check your configuration.');

@@ -11,6 +11,11 @@ import Footer from './components/Footer';
 import ParticleBackground from './components/ParticleBackground';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import ImpactPledge from './components/ImpactPledge';
+import LocationSetup from './components/LocationSetup';
+import AvatarSetup from './components/AvatarSetup';
+import Dashboard from './components/Dashboard';
+import EcoPoints from './components/EcoPoints';
 
 const HomePage = () => (
   <>
@@ -34,6 +39,11 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/pledge" element={<ImpactPledge onComplete={() => window.location.href = '/location-setup'} />} />
+          <Route path="/location-setup" element={<LocationSetup onComplete={() => window.location.href = '/avatar-setup'} />} />
+          <Route path="/avatar-setup" element={<AvatarSetup onComplete={() => window.location.href = '/dashboard'} />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/eco-points" element={<EcoPoints />} />
         </Routes>
       </div>
     </Router>
