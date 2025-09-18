@@ -44,14 +44,27 @@ const Dashboard: React.FC = () => {
       // Get user profile for location and age
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('location, age')
-          .eq('id', user.id)
-          .single();
+        let location = 'Unknown';
+        let age = 18;
         
-        const location = profile?.location || 'Unknown';
-        const age = profile?.age || 18;
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('location, age')
+            .eq('id', user.id)
+            .single();
+          
+          location = profile?.location || 'Unknown';
+          age = profile?.age || 18;
+        } catch (dbError) {
+          // Database table doesn't exist, use localStorage fallback
+          const setupData = localStorage.getItem(`setup_${user.id}`);
+          if (setupData) {
+            const parsed = JSON.parse(setupData);
+            location = parsed.location || 'Unknown';
+            age = parsed.age || 18;
+          }
+        }
         
         // Generate AI tasks based on location and age
         const tasks = await generateLocationTasks(location, age, coordinates);
@@ -216,26 +229,31 @@ const Dashboard: React.FC = () => {
           if (!data.first_login_completed) {
             setShowFirstTimeSetup(true);
           }
+          return;
         }
       } catch (error) {
-        // Check localStorage for setup data
-        const setupData = localStorage.getItem(`setup_${user.id}`);
-        if (!setupData) {
-          setShowFirstTimeSetup(true);
-        }
-        
-        // Create basic profile with localStorage points
-        const points = parseInt(localStorage.getItem(`eco_points_${user.id}`) || '0');
-        setProfile({
-          eco_points: points,
-          level: Math.floor(points / 100) + 1,
-          full_name: 'User',
-          avatar_accessories: [],
-          location: '',
-          state: '',
-          district: ''
-        });
+        // Database table doesn't exist or other error, continue with localStorage
       }
+      
+      // Check localStorage for setup data
+      const setupData = localStorage.getItem(`setup_${user.id}`);
+      if (!setupData) {
+        setShowFirstTimeSetup(true);
+      }
+      
+      // Create basic profile with localStorage points
+      const points = parseInt(localStorage.getItem(`eco_points_${user.id}`) || '0');
+      const setup = setupData ? JSON.parse(setupData) : {};
+      
+      setProfile({
+        eco_points: points,
+        level: Math.floor(points / 100) + 1,
+        full_name: setup.name || 'User',
+        avatar_accessories: [],
+        location: setup.location || '',
+        state: setup.state || '',
+        district: setup.district || ''
+      });
     }
   };
 
@@ -495,24 +513,60 @@ const Dashboard: React.FC = () => {
         </motion.div>
 
         {/* Tab Content */}
-        <div className={`${activeTab === 'impact' || activeTab === 'learn' ? 'w-full' : 'grid grid-cols-1 lg:grid-cols-3 gap-8'}`}>
-          <div className={`${activeTab === 'impact' || activeTab === 'learn' ? 'w-full' : 'lg:col-span-2'}`}>
+        <div className="w-full">
+          <div className="w-full">
             {activeTab === 'act' && (
-              <>
-                <motion.h2
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-3xl font-bold mb-8 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent"
-                >
-                  Your Active Quests
-                </motion.h2>
-                
+              <div className="space-y-8">
+                {/* Act Tab Header */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex space-x-4 mb-8"
+                  className="text-center mb-8"
                 >
-                  {['For You', 'Your Locality', 'Trending'].map((subtab, index) => (
+                  <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-green-400 bg-clip-text text-transparent">
+                    Take Action for the Planet
+                  </h2>
+                  <p className="text-slate-400 text-lg">Complete missions to earn points and make real environmental impact</p>
+                </motion.div>
+
+                {/* Mission Stats */}
+                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 text-center"
+                  >
+                    <div className="text-3xl font-bold text-emerald-400 mb-2">{locationTasks.length}</div>
+                    <div className="text-slate-300">Available Missions</div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 text-center"
+                  >
+                    <div className="text-3xl font-bold text-blue-400 mb-2">{taskCompleted ? 1 : 0}</div>
+                    <div className="text-slate-300">Completed Today</div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 text-center"
+                  >
+                    <div className="text-3xl font-bold text-yellow-400 mb-2">{profile.eco_points}</div>
+                    <div className="text-slate-300">Total Points</div>
+                  </motion.div>
+                </div>
+
+                {/* Mission Categories */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex flex-wrap gap-4 mb-8 justify-center"
+                >
+                  {['For You', 'Your Locality', 'Trending', 'Quick Wins'].map((subtab, index) => (
                     <motion.button
                       key={subtab}
                       whileHover={{ scale: 1.05 }}
@@ -528,52 +582,71 @@ const Dashboard: React.FC = () => {
                   ))}
                 </motion.div>
 
+                {/* Missions Grid - Full Width */}
                 {loadingTasks ? (
-                  <div className="text-center py-8">
-                    <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-slate-400">Generating personalized tasks...</p>
+                  <div className="text-center py-16">
+                    <div className="w-12 h-12 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+                    <h3 className="text-xl font-semibold mb-2">Generating Personalized Missions</h3>
+                    <p className="text-slate-400">Using AI to create tasks based on your location and preferences...</p>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
                     {locationTasks.map((challenge, index) => (
-                    <motion.div
-                      key={challenge.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      className="group relative overflow-hidden bg-slate-900/30 backdrop-blur-sm border border-slate-800/50 rounded-2xl p-6 hover:border-emerald-500/50 transition-all cursor-pointer"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-4">
-                          <h3 className="text-xl font-semibold group-hover:text-emerald-400 transition-colors">{challenge.title}</h3>
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            challenge.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                            challenge.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                            'bg-red-500/20 text-red-400 border border-red-500/30'
-                          }`}>
-                            {challenge.difficulty}
-                          </span>
+                      <motion.div
+                        key={challenge.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.02, y: -5 }}
+                        className="group relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-emerald-500/50 transition-all h-full flex flex-col"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative z-10 flex flex-col h-full">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                                <span className="text-2xl">{challenge.category === 'nature' ? '🌱' : challenge.category === 'water' ? '💧' : '♻️'}</span>
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-semibold group-hover:text-emerald-400 transition-colors">{challenge.title}</h3>
+                                <div className="text-sm text-slate-400 capitalize">{challenge.category} Mission</div>
+                              </div>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              challenge.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                              challenge.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                              'bg-red-500/20 text-red-400 border border-red-500/30'
+                            }`}>
+                              {challenge.difficulty}
+                            </span>
+                          </div>
+                          <p className="text-slate-300 mb-4 leading-relaxed flex-grow">{challenge.description}</p>
+                          {challenge.localContext && (
+                            <div className="bg-slate-800/30 rounded-lg p-3 mb-4">
+                              <div className="text-sm text-slate-400 mb-1">Why this matters locally:</div>
+                              <div className="text-sm text-slate-300">{challenge.localContext}</div>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center mt-auto">
+                            <div className="flex items-center space-x-4">
+                              <span className="text-emerald-400 font-bold text-lg">+{challenge.points} points</span>
+                              <span className="text-slate-400 text-sm">• 15-30 min</span>
+                            </div>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setSelectedMission(challenge)}
+                              className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3 rounded-full font-semibold hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/25"
+                            >
+                              Start Mission
+                            </motion.button>
+                          </div>
                         </div>
-                        <p className="text-slate-300 mb-6 leading-relaxed">{challenge.description}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-emerald-400 font-bold text-lg">+{challenge.points} points</span>
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedMission(challenge)}
-                            className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3 rounded-full font-semibold hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/25"
-                          >
-                            Start Mission
-                          </motion.button>
-                        </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
                     ))}
                   </div>
                 )}
-              </>
+              </div>
             )}
             
             {activeTab === 'learn' && (
@@ -616,70 +689,81 @@ const Dashboard: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Learning Content Grid */}
-                <div className="grid lg:grid-cols-3 gap-8">
-                  <div className="lg:col-span-2">
-                    <RobloxLearning />
-                  </div>
-                  
-                  {/* Learning Sidebar */}
-                  <div className="space-y-6">
-                    {/* Current Progress */}
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 }}
-                      className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6"
-                    >
-                      <h3 className="text-lg font-bold mb-4 text-blue-400">Current Learning Path</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex justify-between mb-2">
-                            <span className="text-sm">Renewable Energy</span>
-                            <span className="text-sm font-semibold">75%</span>
-                          </div>
-                          <div className="w-full bg-slate-700 rounded-full h-2">
-                            <div className="bg-blue-500 h-2 rounded-full w-3/4" />
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex justify-between mb-2">
-                            <span className="text-sm">Climate Science</span>
-                            <span className="text-sm font-semibold">45%</span>
-                          </div>
-                          <div className="w-full bg-slate-700 rounded-full h-2">
-                            <div className="bg-purple-500 h-2 rounded-full w-2/5" />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                {/* Full-Screen Learning Content */}
+                <div className="w-full">
+                  <RobloxLearning />
+                </div>
 
-                    {/* Achievements */}
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.7 }}
-                      className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6"
-                    >
-                      <h3 className="text-lg font-bold mb-4 text-green-400">Recent Badges</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center p-3 bg-slate-800/30 rounded-lg">
-                          <span className="text-2xl mr-3">🌱</span>
-                          <div>
-                            <div className="font-semibold text-sm">Solar Expert</div>
-                            <div className="text-xs text-slate-400">Completed solar energy module</div>
-                          </div>
+                {/* Learning Progress & Achievements Grid */}
+                <div className="grid lg:grid-cols-2 gap-8 mt-8">
+                  {/* Enhanced Progress Tracking */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6"
+                  >
+                    <h3 className="text-2xl font-bold mb-6 text-blue-400 flex items-center">
+                      <BarChart3 className="w-7 h-7 mr-3" />
+                      Learning Progress
+                    </h3>
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex justify-between mb-3">
+                          <span className="text-lg font-semibold">Current Level</span>
+                          <span className="text-lg font-bold text-blue-400">Level {profile.level}</span>
                         </div>
-                        <div className="flex items-center p-3 bg-slate-800/30 rounded-lg">
-                          <span className="text-2xl mr-3">💧</span>
-                          <div>
-                            <div className="font-semibold text-sm">Water Warrior</div>
-                            <div className="text-xs text-slate-400">Mastered water conservation</div>
-                          </div>
+                        <div className="w-full bg-slate-700 rounded-full h-3">
+                          <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500" style={{width: `${Math.min((profile.level / 10) * 100, 100)}%`}} />
                         </div>
+                        <div className="text-sm text-slate-400 mt-2">Progress to Level {Math.min(profile.level + 1, 10)}</div>
                       </div>
-                    </motion.div>
-                  </div>
+                      <div>
+                        <div className="flex justify-between mb-3">
+                          <span className="text-lg font-semibold">Game Areas Unlocked</span>
+                          <span className="text-lg font-bold text-green-400">{Math.floor(profile.eco_points / 100)}/5</span>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-3">
+                          <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500" style={{width: `${Math.min((Math.floor(profile.eco_points / 100) / 5) * 100, 100)}%`}} />
+                        </div>
+                        <div className="text-sm text-slate-400 mt-2">{100 - (profile.eco_points % 100)} points to next area</div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Enhanced Achievements */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.7 }}
+                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6"
+                  >
+                    <h3 className="text-2xl font-bold mb-6 text-green-400 flex items-center">
+                      <Award className="w-7 h-7 mr-3" />
+                      Learning Achievements
+                    </h3>
+                    <div className="space-y-4">
+                      {[
+                        { icon: '🌱', title: 'Eco Beginner', desc: 'Started environmental journey', unlocked: profile.eco_points >= 0 },
+                        { icon: '💧', title: 'Water Warrior', desc: 'Learned water conservation', unlocked: profile.eco_points >= 50 },
+                        { icon: '♻️', title: 'Recycling Pro', desc: 'Mastered waste management', unlocked: profile.eco_points >= 100 },
+                        { icon: '⚡', title: 'Energy Expert', desc: 'Understood renewable energy', unlocked: profile.eco_points >= 200 }
+                      ].map((badge) => (
+                        <div key={badge.title} className={`flex items-center p-4 rounded-xl transition-all ${
+                          badge.unlocked 
+                            ? 'bg-slate-800/50 border border-green-500/30' 
+                            : 'bg-slate-800/20 border border-slate-700/30 opacity-50'
+                        }`}>
+                          <div className={`text-3xl mr-4 ${badge.unlocked ? '' : 'grayscale'}`}>{badge.icon}</div>
+                          <div className="flex-grow">
+                            <div className={`font-semibold ${badge.unlocked ? 'text-white' : 'text-slate-500'}`}>{badge.title}</div>
+                            <div className={`text-sm ${badge.unlocked ? 'text-slate-300' : 'text-slate-600'}`}>{badge.desc}</div>
+                          </div>
+                          {badge.unlocked && <CheckCircle className="w-6 h-6 text-green-400" />}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
                 </div>
               </div>
             )}
@@ -885,20 +969,7 @@ const Dashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Sidebar for Act tab only */}
-          {activeTab === 'act' && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6">
-                <h3 className="text-lg font-bold mb-4 text-emerald-400">Mission Tips</h3>
-                <div className="space-y-3 text-sm text-slate-300">
-                  <p>📸 Take clear photos for verification</p>
-                  <p>🌍 Focus on local environmental issues</p>
-                  <p>👥 Invite friends to join missions</p>
-                  <p>⏰ Complete daily tasks for bonus points</p>
-                </div>
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
       
