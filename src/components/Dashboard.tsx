@@ -13,7 +13,6 @@ interface Profile {
   eco_points: number;
   level: number;
   full_name: string;
-  avatar_accessories: string[];
   location: string;
   state: string;
   district: string;
@@ -249,7 +248,6 @@ const Dashboard: React.FC = () => {
         eco_points: points,
         level: Math.floor(points / 100) + 1,
         full_name: setup.name || 'User',
-        avatar_accessories: [],
         location: setup.location || '',
         state: setup.state || '',
         district: setup.district || ''
