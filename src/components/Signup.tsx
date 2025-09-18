@@ -9,6 +9,7 @@ const Signup: React.FC = () => {
     fullName: '',
     email: '',
     mobile: '',
+    dateOfBirth: '',
     password: '',
     confirmPassword: ''
   });
@@ -39,6 +40,7 @@ const Signup: React.FC = () => {
           data: {
             full_name: formData.fullName,
             mobile: formData.mobile,
+            date_of_birth: formData.dateOfBirth
           }
         }
       });
@@ -133,6 +135,20 @@ const Signup: React.FC = () => {
                 placeholder="Enter your mobile number"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Date of Birth
+            </label>
+            <input
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:border-emerald-500 focus:outline-none transition-colors"
+            />
           </div>
 
           <div>

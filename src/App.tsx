@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -12,8 +12,6 @@ import ParticleBackground from './components/ParticleBackground';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import ImpactPledge from './components/ImpactPledge';
-import LocationSetup from './components/LocationSetup';
-
 import Dashboard from './components/Dashboard';
 import EcoPoints from './components/EcoPoints';
 import RewardsHub from './components/RewardsHub';
@@ -35,12 +33,7 @@ const HomePage = () => (
 
 const ImpactPledgeWrapper = () => {
   const navigate = useNavigate();
-  return <ImpactPledge onComplete={() => navigate('/location-setup')} />;
-};
-
-const LocationSetupWrapper = () => {
-  const navigate = useNavigate();
-  return <LocationSetup onComplete={() => navigate('/dashboard')} />;
+  return <ImpactPledge onComplete={() => navigate('/dashboard')} />;
 };
 
 function App() {
@@ -52,11 +45,12 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/pledge" element={<ImpactPledgeWrapper />} />
-          <Route path="/location-setup" element={<LocationSetupWrapper />} />
+          <Route path="/location-setup" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/eco-points" element={<EcoPoints />} />
           <Route path="/rewards" element={<RewardsHub />} />
           <Route path="/teams" element={<EcoTeams />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>

@@ -8,6 +8,8 @@ import { addPoints } from '../lib/ecoPointsSystem';
 import FirstTimeSetup from './FirstTimeSetup';
 import { getCurrentLocation, generateLocationTasks } from '../lib/locationTasks';
 import RobloxLearning from './RobloxLearning';
+import QuizComponent from './QuizComponent';
+import LearningContent from './LearningContent';
 
 interface Profile {
   eco_points: number;
@@ -16,6 +18,8 @@ interface Profile {
   location: string;
   state: string;
   district: string;
+  age?: number;
+  date_of_birth?: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -37,69 +41,67 @@ const Dashboard: React.FC = () => {
   const loadLocationTasks = async () => {
     setLoadingTasks(true);
     try {
-      // Get GPS location
-      const coordinates = await getCurrentLocation();
-      
-      // Get user profile for location and age
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        let location = 'Unknown';
         let age = 18;
         
         try {
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
-            .select('location, age')
+            .select('age')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
           
-          location = profile?.location || 'Unknown';
-          age = profile?.age || 18;
+          if (!error && profile) {
+            age = profile.age || 18;
+          }
         } catch (dbError) {
-          // Database table doesn't exist, use localStorage fallback
           const setupData = localStorage.getItem(`setup_${user.id}`);
           if (setupData) {
             const parsed = JSON.parse(setupData);
-            location = parsed.location || 'Unknown';
             age = parsed.age || 18;
           }
         }
         
-        // Generate AI tasks based on location and age
-        const tasks = await generateLocationTasks(location, age, coordinates);
+        const tasks = await generateLocationTasks('General', age);
         setLocationTasks(tasks.map((task, index) => ({ ...task, id: index + 1 })));
       }
     } catch (error) {
-      console.log('Location access denied or failed, using default tasks');
-      // Fallback to default tasks
-      setLocationTasks([
-        {
-          id: 1,
-          title: "Plant a Tree in Your Area",
-          description: "Find a suitable spot and plant a sapling",
-          points: 50,
-          difficulty: "Medium",
-          category: "nature"
-        },
-        {
-          id: 2,
-          title: "Organize Neighborhood Cleanup",
-          description: "Clean up a local park or street with friends",
-          points: 75,
-          difficulty: "Hard",
-          category: "waste"
-        },
-        {
-          id: 3,
-          title: "Start Home Composting",
-          description: "Set up composting for kitchen waste",
-          points: 30,
-          difficulty: "Easy",
-          category: "waste"
-        }
-      ]);
+      setLocationTasks(getOfflineTasks());
     }
     setLoadingTasks(false);
+  };
+
+  const getOfflineTasks = () => {
+    return [
+      {
+        id: 1,
+        title: "Plant a Tree in Your Area",
+        description: "Find a suitable spot and plant a sapling",
+        points: 50,
+        difficulty: "Medium",
+        category: "nature",
+        localContext: "Help green your local community"
+      },
+      {
+        id: 2,
+        title: "Organize Neighborhood Cleanup",
+        description: "Clean up a local park or street with friends",
+        points: 75,
+        difficulty: "Hard",
+        category: "waste",
+        localContext: "Keep your area clean and beautiful"
+      },
+      {
+        id: 3,
+        title: "Start Home Composting",
+        description: "Set up composting for kitchen waste",
+        points: 30,
+        difficulty: "Easy",
+        category: "waste",
+        localContext: "Reduce household waste effectively"
+      }
+    ];
   };
 
   const loadDailyTask = async () => {
@@ -216,14 +218,35 @@ const Dashboard: React.FC = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
         
+        if (error) {
+          console.log('Profile query error:', error);
+          throw error;
+        }
+        
         if (data) {
-          setProfile(data);
+          const calculateAge = (dob: string) => {
+            if (!dob) return 18;
+            const today = new Date();
+            const birthDate = new Date(dob);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+              age--;
+            }
+            return age;
+          };
+          
+          setProfile({
+            ...data,
+            age: data.date_of_birth ? calculateAge(data.date_of_birth) : 18
+          });
+          
           // Check if first login
           if (!data.first_login_completed) {
             setShowFirstTimeSetup(true);
@@ -246,11 +269,13 @@ const Dashboard: React.FC = () => {
       
       setProfile({
         eco_points: points,
-        level: Math.floor(points / 100) + 1,
+        level: Math.floor(points / 50) + 1,
         full_name: setup.name || 'User',
         location: setup.location || '',
         state: setup.state || '',
-        district: setup.district || ''
+        district: setup.district || '',
+        age: setup.age || 18,
+        date_of_birth: setup.date_of_birth
       });
     }
   };
@@ -259,6 +284,23 @@ const Dashboard: React.FC = () => {
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [selectedMission, setSelectedMission] = useState<any>(null);
   const [proofImage, setProofImage] = useState<string>('');
+  const [connectionStatus, setConnectionStatus] = useState<'online' | 'offline' | 'checking'>('checking');
+
+  // Check connection status
+  useEffect(() => {
+    const checkConnection = () => {
+      setConnectionStatus(navigator.onLine ? 'online' : 'offline');
+    };
+    
+    checkConnection();
+    window.addEventListener('online', checkConnection);
+    window.addEventListener('offline', checkConnection);
+    
+    return () => {
+      window.removeEventListener('online', checkConnection);
+      window.removeEventListener('offline', checkConnection);
+    };
+  }, []);
 
   if (!profile) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
@@ -311,6 +353,21 @@ const Dashboard: React.FC = () => {
           </motion.div>
           
           <div className="flex items-center space-x-6">
+            {/* Connection Status Indicator */}
+            <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
+              connectionStatus === 'online' 
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                : connectionStatus === 'offline'
+                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'online' ? 'bg-green-400' :
+                connectionStatus === 'offline' ? 'bg-red-400' : 'bg-yellow-400'
+              }`} />
+              <span>{connectionStatus === 'online' ? 'Online' : connectionStatus === 'offline' ? 'Offline' : 'Checking'}</span>
+            </div>
+            
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => navigate('/rewards')}
@@ -664,10 +721,10 @@ const Dashboard: React.FC = () => {
                 {/* Learning Progress Overview */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   {[
-                    { icon: '🎮', label: 'Game Areas', value: `${Math.floor(profile.eco_points / 100)}/5`, color: 'blue', desc: 'Unlocked with points' },
-                    { icon: '📚', label: 'Lessons', value: `${Math.floor(profile.eco_points / 50)}`, color: 'purple', desc: 'Based on progress' },
+                    { icon: '🎮', label: 'Game Areas', value: `${Math.min(Math.floor(profile.eco_points / 25), 5)}/5`, color: 'blue', desc: 'Unlocked with points' },
+                    { icon: '📚', label: 'Lessons', value: `${Math.floor(profile.eco_points / 15)}`, color: 'purple', desc: 'Based on progress' },
                     { icon: '🏆', label: 'Current Level', value: `${profile.level}`, color: 'green', desc: 'Eco warrior rank' },
-                    { icon: '⏱️', label: 'Total Points', value: `${profile.eco_points}`, color: 'orange', desc: 'Lifetime earned' }
+                    { icon: '⏱️', label: 'Study Time', value: `${Math.floor(profile.eco_points / 5)}min`, color: 'orange', desc: 'Learning minutes' }
                   ].map((stat, index) => (
                     <motion.div
                       key={stat.label}
@@ -685,6 +742,18 @@ const Dashboard: React.FC = () => {
                       </div>
                     </motion.div>
                   ))}
+                </div>
+
+                {/* Learning Tabs */}
+                <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-blue-400">Interactive Quiz</h3>
+                    <QuizComponent age={profile.age || 18} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-green-400">Learning Content</h3>
+                    <LearningContent age={profile.age || 18} />
+                  </div>
                 </div>
 
                 {/* Full-Screen Learning Content */}
@@ -719,12 +788,12 @@ const Dashboard: React.FC = () => {
                       <div>
                         <div className="flex justify-between mb-3">
                           <span className="text-lg font-semibold">Game Areas Unlocked</span>
-                          <span className="text-lg font-bold text-green-400">{Math.floor(profile.eco_points / 100)}/5</span>
+                          <span className="text-lg font-bold text-green-400">{Math.min(Math.floor(profile.eco_points / 25), 5)}/5</span>
                         </div>
                         <div className="w-full bg-slate-700 rounded-full h-3">
-                          <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500" style={{width: `${Math.min((Math.floor(profile.eco_points / 100) / 5) * 100, 100)}%`}} />
+                          <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500" style={{width: `${Math.min((Math.floor(profile.eco_points / 25) / 5) * 100, 100)}%`}} />
                         </div>
-                        <div className="text-sm text-slate-400 mt-2">{100 - (profile.eco_points % 100)} points to next area</div>
+                        <div className="text-sm text-slate-400 mt-2">{25 - (profile.eco_points % 25)} points to next area</div>
                       </div>
                     </div>
                   </motion.div>
@@ -743,9 +812,9 @@ const Dashboard: React.FC = () => {
                     <div className="space-y-4">
                       {[
                         { icon: '🌱', title: 'Eco Beginner', desc: 'Started environmental journey', unlocked: profile.eco_points >= 0 },
-                        { icon: '💧', title: 'Water Warrior', desc: 'Learned water conservation', unlocked: profile.eco_points >= 50 },
-                        { icon: '♻️', title: 'Recycling Pro', desc: 'Mastered waste management', unlocked: profile.eco_points >= 100 },
-                        { icon: '⚡', title: 'Energy Expert', desc: 'Understood renewable energy', unlocked: profile.eco_points >= 200 }
+                        { icon: '💧', title: 'Water Warrior', desc: 'Learned water conservation', unlocked: profile.eco_points >= 25 },
+                        { icon: '♻️', title: 'Recycling Pro', desc: 'Mastered waste management', unlocked: profile.eco_points >= 50 },
+                        { icon: '⚡', title: 'Energy Expert', desc: 'Understood renewable energy', unlocked: profile.eco_points >= 100 }
                       ].map((badge) => (
                         <div key={badge.title} className={`flex items-center p-4 rounded-xl transition-all ${
                           badge.unlocked 
@@ -783,10 +852,10 @@ const Dashboard: React.FC = () => {
                 {/* Impact Stats Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   {[
-                    { icon: '💧', label: 'Water Saved', value: `${Math.floor(profile.eco_points * 0.5)}L`, color: 'blue', desc: 'Based on completed missions' },
-                    { icon: '🌱', label: 'CO₂ Offset', value: `${Math.floor(profile.eco_points * 0.02)}kg`, color: 'green', desc: 'Environmental impact' },
-                    { icon: '♻️', label: 'Items Recycled', value: `${Math.floor(profile.eco_points / 10)}`, color: 'yellow', desc: 'Waste diverted from landfill' },
-                    { icon: '⚡', label: 'Energy Saved', value: `${Math.floor(profile.eco_points * 0.1)}kWh`, color: 'purple', desc: 'Power conservation' }
+                    { icon: '💧', label: 'Water Saved', value: `${Math.floor(profile.eco_points * 1.2)}L`, color: 'blue', desc: 'Based on completed missions' },
+                    { icon: '🌱', label: 'CO₂ Offset', value: `${(profile.eco_points * 0.05).toFixed(1)}kg`, color: 'green', desc: 'Environmental impact' },
+                    { icon: '♻️', label: 'Items Recycled', value: `${Math.floor(profile.eco_points / 8)}`, color: 'yellow', desc: 'Waste diverted from landfill' },
+                    { icon: '⚡', label: 'Energy Saved', value: `${(profile.eco_points * 0.15).toFixed(1)}kWh`, color: 'purple', desc: 'Power conservation' }
                   ].map((stat, index) => (
                     <motion.div
                       key={stat.label}
@@ -907,10 +976,10 @@ const Dashboard: React.FC = () => {
                           <div>
                             <div className="flex justify-between mb-2">
                               <span className="text-sm">Next Level Progress</span>
-                              <span className="text-sm font-semibold">{profile.eco_points % 100}/100</span>
+                              <span className="text-sm font-semibold">{profile.eco_points % 50}/50</span>
                             </div>
                             <div className="w-full bg-slate-700 rounded-full h-2">
-                              <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${(profile.eco_points % 100)}%`}} />
+                              <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${((profile.eco_points % 50) / 50) * 100}%`}} />
                             </div>
                           </div>
                         </div>
