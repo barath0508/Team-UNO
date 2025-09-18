@@ -35,14 +35,23 @@ const AvatarSetup: React.FC<AvatarSetupProps> = ({ onComplete }) => {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase
-        .from('profiles')
-        .update({ 
+      try {
+        await supabase
+          .from('profiles')
+          .update({ 
+            avatar_accessories: selectedAccessories,
+            eco_footprint_score: footprintScore,
+            first_login_completed: true
+          })
+          .eq('id', user.id);
+      } catch (error) {
+        // Store in localStorage as fallback
+        localStorage.setItem(`avatar_${user.id}`, JSON.stringify({
           avatar_accessories: selectedAccessories,
           eco_footprint_score: footprintScore,
           first_login_completed: true
-        })
-        .eq('id', user.id);
+        }));
+      }
     }
     
     onComplete();

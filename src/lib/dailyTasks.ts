@@ -9,8 +9,15 @@ export const generateDailyTask = async () => {
       "title": "Short task title",
       "description": "Brief description (max 100 chars)",
       "points": 15,
-      "category": "water"
-    }`;
+      "category": "water",
+      "timerMinutes": 5
+    }
+    
+    Set timerMinutes based on task type:
+    - Quick actions (turn off lights, etc): 1-2 minutes
+    - Reading/learning tasks: 3-5 minutes
+    - Physical activities (cleanup, planting): 10-15 minutes
+    - Research/planning tasks: 5-8 minutes`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
@@ -46,7 +53,8 @@ export const generateDailyTask = async () => {
     title: "Save Water Today",
     description: "Take shorter showers and turn off taps while brushing teeth",
     points: 15,
-    category: "water"
+    category: "water",
+    timerMinutes: 3
   };
 };
 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Trophy, Target, TrendingUp, MapPin, BookOpen, Leaf, Award, Users, Sparkles, Play, CheckCircle } from 'lucide-react';
+import { User, Trophy, Target, TrendingUp, MapPin, BookOpen, Leaf, Award, Users, Sparkles, Play, CheckCircle, Clock, Pause } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { getTodayTask } from '../lib/dailyTasks';
 import { addPoints } from '../lib/ecoPointsSystem';
+import LocationSetupModal from './LocationSetupModal';
 
 interface Profile {
   eco_points: number;
@@ -21,6 +22,9 @@ const Dashboard: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [dailyTask, setDailyTask] = useState<any>(null);
   const [taskCompleted, setTaskCompleted] = useState(false);
+  const [timerActive, setTimerActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -44,6 +48,14 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const startTimer = () => {
+    if (dailyTask && !timerActive && !taskCompleted) {
+      const minutes = dailyTask.timerMinutes || 5;
+      setTimeLeft(minutes * 60);
+      setTimerActive(true);
+    }
+  };
+
   const completeTask = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user && dailyTask && !taskCompleted) {
@@ -55,24 +67,75 @@ const Dashboard: React.FC = () => {
         localStorage.setItem(completionKey, 'true');
         
         setTaskCompleted(true);
+        setTimerActive(false);
         loadProfile(); // Refresh points
       } catch (error) {
         console.log('Error completing task:', error);
         setTaskCompleted(true);
+        setTimerActive(false);
       }
     }
+  };
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timerActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            setTimerActive(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      if (data) setProfile(data);
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (data) {
+          setProfile(data);
+          // Check if first login
+          if (!data.first_login_completed) {
+            setShowLocationModal(true);
+          }
+        }
+      } catch (error) {
+        // Check localStorage for location data
+        const locationData = localStorage.getItem(`location_${user.id}`);
+        if (!locationData) {
+          setShowLocationModal(true);
+        }
+        
+        // Create basic profile with localStorage points
+        const points = parseInt(localStorage.getItem(`eco_points_${user.id}`) || '0');
+        setProfile({
+          eco_points: points,
+          level: Math.floor(points / 100) + 1,
+          full_name: 'User',
+          avatar_accessories: [],
+          location: '',
+          state: '',
+          district: ''
+        });
+      }
     }
   };
 
@@ -254,34 +317,55 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
               <h3 className="text-xl font-semibold mb-2">{dailyTask.title}</h3>
-              <p className="text-slate-300 mb-6">{dailyTask.description}</p>
-              <motion.button
-                whileHover={!taskCompleted ? { scale: 1.05 } : {}}
-                whileTap={!taskCompleted ? { scale: 0.95 } : {}}
-                onClick={completeTask}
-                disabled={taskCompleted}
-                className={`group relative px-8 py-4 font-semibold rounded-full overflow-hidden transition-all ${
-                  taskCompleted
-                    ? 'bg-green-500/20 text-green-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600'
-                }`}
-              >
-                <span className="relative z-10 flex items-center">
-                  {taskCompleted ? (
-                    <><CheckCircle className="w-5 h-5 mr-2" />Task Completed</>
-                  ) : (
-                    <><Play className="w-5 h-5 mr-2" />Complete Task</>
-                  )}
-                </span>
-                {!taskCompleted && (
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600"
-                    initial={{ scale: 0 }}
-                    whileHover={{ scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
+              <p className="text-slate-300 mb-4">{dailyTask.description}</p>
+              
+              {/* Timer Display */}
+              {timerActive && (
+                <div className="flex items-center justify-center mb-4 p-4 bg-slate-800/50 rounded-lg">
+                  <Clock className="w-5 h-5 mr-2 text-blue-400" />
+                  <span className="text-2xl font-bold text-blue-400">{formatTime(timeLeft)}</span>
+                  <span className="ml-2 text-slate-400">remaining</span>
+                </div>
+              )}
+              
+              <div className="flex space-x-4">
+                {!taskCompleted && !timerActive && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={startTimer}
+                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-full overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center">
+                      <Play className="w-5 h-5 mr-2" />Start Mission
+                    </span>
+                  </motion.button>
                 )}
-              </motion.button>
+                
+                {timerActive && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={completeTask}
+                    className="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-full overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center">
+                      <CheckCircle className="w-5 h-5 mr-2" />Complete Task
+                    </span>
+                  </motion.button>
+                )}
+                
+                {taskCompleted && (
+                  <motion.button
+                    disabled
+                    className="px-8 py-4 bg-green-500/20 text-green-400 font-semibold rounded-full cursor-not-allowed"
+                  >
+                    <span className="flex items-center">
+                      <CheckCircle className="w-5 h-5 mr-2" />Task Completed
+                    </span>
+                  </motion.button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -485,6 +569,14 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <LocationSetupModal 
+        isOpen={showLocationModal}
+        onComplete={() => {
+          setShowLocationModal(false);
+          loadProfile();
+        }}
+      />
     </div>
   );
 };

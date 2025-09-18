@@ -1,20 +1,29 @@
 import { supabase } from './supabase';
 
 export const addPoints = async (userId: string, points: number, reason: string) => {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('eco_points')
-    .eq('id', userId)
-    .single();
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('eco_points')
+      .eq('id', userId)
+      .single();
 
-  const newPoints = (profile?.eco_points || 0) + points;
-  
-  await supabase
-    .from('profiles')
-    .update({ eco_points: newPoints })
-    .eq('id', userId);
+    const newPoints = (profile?.eco_points || 0) + points;
+    
+    await supabase
+      .from('profiles')
+      .update({ eco_points: newPoints })
+      .eq('id', userId);
 
-  return newPoints;
+    return newPoints;
+  } catch (error) {
+    // Fallback to localStorage if database fails
+    const storageKey = `eco_points_${userId}`;
+    const currentPoints = parseInt(localStorage.getItem(storageKey) || '0');
+    const newPoints = currentPoints + points;
+    localStorage.setItem(storageKey, newPoints.toString());
+    return newPoints;
+  }
 };
 
 export const getLeaderboard = async () => {
@@ -28,11 +37,17 @@ export const getLeaderboard = async () => {
 };
 
 export const getUserPoints = async (userId: string) => {
-  const { data } = await supabase
-    .from('profiles')
-    .select('eco_points')
-    .eq('id', userId)
-    .single();
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('eco_points')
+      .eq('id', userId)
+      .single();
 
-  return data?.eco_points || 0;
+    return data?.eco_points || 0;
+  } catch (error) {
+    // Fallback to localStorage
+    const storageKey = `eco_points_${userId}`;
+    return parseInt(localStorage.getItem(storageKey) || '0');
+  }
 };
