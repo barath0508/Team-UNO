@@ -44,7 +44,7 @@ const Header: React.FC = () => {
               <Leaf className="w-8 h-8 text-emerald-400 relative z-10" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-              Prakriti Warriors
+              Green Spark
             </span>
           </motion.div>
 

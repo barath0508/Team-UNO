@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
                 <Leaf className="w-8 h-8 text-emerald-400 relative z-10" />
               </motion.div>
               <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                Prakriti Warriors
+                Green Spark
               </span>
             </div>
             
@@ -172,7 +172,7 @@ const Footer: React.FC = () => {
               viewport={{ once: true }}
               className="text-slate-400 text-sm mb-4 md:mb-0"
             >
-              © 2025 Prakriti Warriors. All rights reserved. Made with 💚 for the planet.
+              © 2025 Green Spark. All rights reserved. Made with 💚 for the planet.
             </motion.div>
 
             <motion.div

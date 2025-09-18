@@ -132,7 +132,7 @@ const Impact: React.FC = () => {
             Collective Achievement
           </motion.h2>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-            Together, our Prakriti Warriors community has created measurable environmental impact 
+            Together, our Green Spark community has created measurable environmental impact 
             across Punjab and beyond.
           </p>
         </motion.div>
