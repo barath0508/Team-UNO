@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-emerald-400">{profile.eco_points}</div>
-            <div className="text-sm text-slate-400">Prakriti Points</div>
+            <div className="text-sm text-slate-400">Eco Points</div>
           </div>
         </div>
       </div>

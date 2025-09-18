@@ -16,6 +16,8 @@ import LocationSetup from './components/LocationSetup';
 import AvatarSetup from './components/AvatarSetup';
 import Dashboard from './components/Dashboard';
 import EcoPoints from './components/EcoPoints';
+import RewardsHub from './components/RewardsHub';
+import EcoTeams from './components/EcoTeams';
 
 const HomePage = () => (
   <>
@@ -44,6 +46,8 @@ function App() {
           <Route path="/avatar-setup" element={<AvatarSetup onComplete={() => window.location.href = '/dashboard'} />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/eco-points" element={<EcoPoints />} />
+          <Route path="/rewards" element={<RewardsHub />} />
+          <Route path="/teams" element={<EcoTeams />} />
         </Routes>
       </div>
     </Router>

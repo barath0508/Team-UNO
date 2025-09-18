@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Plus } from 'lucide-react';
 import { addPoints, getLeaderboard, getUserPoints } from '../lib/ecoPointsSystem';
+import { checkAndAwardBadges, generateCertificate } from '../lib/rewardsSystem';
 import { supabase } from '../lib/supabase';
 
 const EcoPoints: React.FC = () => {
@@ -28,6 +29,18 @@ const EcoPoints: React.FC = () => {
     if (userId) {
       const newPoints = await addPoints(userId, points, reason);
       setUserPoints(newPoints);
+      
+      // Check for new badges and certificates
+      const newBadges = await checkAndAwardBadges(userId, newPoints);
+      const certificate = await generateCertificate(userId, newPoints);
+      
+      if (newBadges.length > 0) {
+        alert(`🎉 New badge earned: ${newBadges[0].name}!`);
+      }
+      if (certificate) {
+        alert(`🏆 Certificate unlocked for ${certificate} points!`);
+      }
+      
       loadData(); // Refresh leaderboard
     }
   };

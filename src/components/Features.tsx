@@ -39,7 +39,7 @@ const Features: React.FC = () => {
     {
       icon: Trophy,
       title: 'Gamified Rewards',
-      description: 'Earn Prakriti Points, unlock badges, and redeem eco-friendly rewards.',
+      description: 'Earn Eco Points, unlock badges, and redeem eco-friendly rewards.',
       gradient: 'from-purple-500 to-pink-500'
     },
     {
