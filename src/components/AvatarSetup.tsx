@@ -100,10 +100,10 @@ const AvatarSetup: React.FC<AvatarSetupProps> = ({ onComplete }) => {
             <h2 className="text-2xl font-bold mb-8">Customize Your Avatar</h2>
             
             <div className="mb-8">
-              <div className="w-24 h-24 bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">
+              <div className="w-24 h-24 bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl relative">
                 <User className="w-12 h-12" />
                 {selectedAccessories.map((acc, i) => (
-                  <span key={i} className="absolute">{acc}</span>
+                  <span key={i} className="absolute text-lg" style={{top: `${10 + i*5}px`, left: `${40 + i*10}px`}}>{acc}</span>
                 ))}
               </div>
               
@@ -135,7 +135,7 @@ const AvatarSetup: React.FC<AvatarSetupProps> = ({ onComplete }) => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setCurrentQuestion(0)}
+              onClick={() => completeSetup(ecoAnswers)}
               className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold py-3 rounded-lg flex items-center justify-center"
             >
               Complete Setup
