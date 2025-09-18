@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'pla
 
 export const generateLocationBasedTask = async (location: string, userLevel: number) => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     
     const prompt = `Create an environmental challenge for a Level ${userLevel} user in ${location}, India. 
     The task should be:
