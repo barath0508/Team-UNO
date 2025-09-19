@@ -49,7 +49,7 @@ All components in the Green Spark application now use **real-time calculations**
 - **Player Rank**: Dynamic calculation based on actual points
 
 #### Game Area Unlocking (Reduced Thresholds)
-- **Solar City**: 0 points (always unlocked)
+- **Eco World**: 0 points (always unlocked)
 - **Wind Valley**: 25 points
 - **Recycling Hub**: 50 points  
 - **Green Forest**: 100 points

@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Medal, Award, MapPin, Globe, Building } from 'lucide-react';
+import { Trophy, Medal, Award, MapPin, Globe, Building, Star } from 'lucide-react';
 import { getLeaderboard, getUserRank } from '../lib/ecoPoints';
 import { supabase } from '../lib/supabase';
+
+const getGrade = (points: number): { grade: string; color: string; bgColor: string } => {
+  if (points >= 1000) return { grade: 'A+', color: 'text-purple-400', bgColor: 'bg-purple-500/20' };
+  if (points >= 750) return { grade: 'A', color: 'text-blue-400', bgColor: 'bg-blue-500/20' };
+  if (points >= 500) return { grade: 'B+', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' };
+  if (points >= 300) return { grade: 'B', color: 'text-green-400', bgColor: 'bg-green-500/20' };
+  if (points >= 150) return { grade: 'C+', color: 'text-yellow-400', bgColor: 'bg-yellow-500/20' };
+  if (points >= 75) return { grade: 'C', color: 'text-orange-400', bgColor: 'bg-orange-500/20' };
+  return { grade: 'D', color: 'text-red-400', bgColor: 'bg-red-500/20' };
+};
 
 const Leaderboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'global' | 'state' | 'district'>('global');
@@ -79,8 +89,13 @@ const Leaderboard: React.FC = () => {
                   #{userRank}
                 </div>
                 <div>
-                  <h3 className="font-semibold">{userProfile.full_name}</h3>
-                  <p className="text-emerald-400">Level {userProfile.level}</p>
+                  <h3 className="font-semibold text-lg">{userProfile.full_name}</h3>
+                  <div className="flex items-center space-x-3 mt-1">
+                    <span className="text-emerald-400 font-medium">Level {userProfile.level}</span>
+                    <div className={`px-2 py-1 rounded-full text-xs font-bold ${getGrade(userProfile.eco_points).bgColor} ${getGrade(userProfile.eco_points).color}`}>
+                      Grade {getGrade(userProfile.eco_points).grade}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="text-right">
@@ -118,11 +133,27 @@ const Leaderboard: React.FC = () => {
           className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden"
         >
           <div className="p-6 border-b border-slate-800">
-            <h2 className="text-xl font-semibold">
-              {activeTab === 'global' ? 'Global Rankings' : 
-               activeTab === 'state' ? `${userProfile?.state} Rankings` : 
-               `${userProfile?.district} Rankings`}
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                {activeTab === 'global' ? 'Global Rankings' : 
+                 activeTab === 'state' ? `${userProfile?.state} Rankings` : 
+                 `${userProfile?.district} Rankings`}
+              </h2>
+              <div className="flex items-center space-x-4 text-sm text-slate-400">
+                <div className="flex items-center space-x-1">
+                  <Star className="w-4 h-4" />
+                  <span>Points</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Trophy className="w-4 h-4" />
+                  <span>Level</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Award className="w-4 h-4" />
+                  <span>Grade</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {loading ? (
@@ -143,16 +174,20 @@ const Leaderboard: React.FC = () => {
                     <div className="flex items-center justify-center w-8">
                       {getRankIcon(index + 1)}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold">{user.full_name}</h3>
-                      <p className="text-sm text-slate-400">
-                        Level {user.level} • {user.location}
-                      </p>
+                      <div className="flex items-center space-x-3 mt-1">
+                        <span className="text-sm text-emerald-400">Level {user.level}</span>
+                        <div className={`px-2 py-1 rounded-full text-xs font-bold ${getGrade(user.eco_points).bgColor} ${getGrade(user.eco_points).color}`}>
+                          {getGrade(user.eco_points).grade}
+                        </div>
+                        <span className="text-xs text-slate-500">• {user.location}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-emerald-400">{user.eco_points}</div>
-                    <div className="text-xs text-slate-400">points</div>
+                    <div className="font-bold text-emerald-400 text-lg">{user.eco_points}</div>
+                    <div className="text-xs text-slate-400">eco points</div>
                   </div>
                 </motion.div>
               ))}

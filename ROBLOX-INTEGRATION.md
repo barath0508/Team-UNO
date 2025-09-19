@@ -6,7 +6,7 @@ Interactive environmental education through Roblox gameplay where students learn
 ## 🌟 **Key Features**
 
 ### **1. Progressive Unlocking System**
-- **Solar City** (0 points) - Learn solar energy basics
+- **Eco World** (0 points) - Learn solar energy basics
 - **Wind Valley** (100 points) - Explore wind power generation  
 - **Recycling Hub** (200 points) - Master waste management
 - **Green Forest** (300 points) - Discover biodiversity

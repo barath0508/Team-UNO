@@ -12,13 +12,15 @@ import Level1StubbleBurning from './Level1StubbleBurning';
 import EnvironmentalLevelLesson from './EnvironmentalLevelLesson';
 import QuizComponent from './QuizComponent';
 import LearningContent from './LearningContent';
-import AITutor from './AITutor';
-import AILessonGenerator from './AILessonGenerator';
+
 import StubbleBurningLesson from './StubbleBurningLesson';
 import ProfileEditor from './ProfileEditor';
 import NotificationCenter from './NotificationCenter';
 import RewardsSystem from './RewardsSystem';
 import SupportChat from './SupportChat';
+import { verifyMissionWithAI } from '../lib/aiVerification';
+import VerificationResult from './VerificationResult';
+import VerificationHistory from './VerificationHistory';
 
 interface Profile {
   eco_points: number;
@@ -212,26 +214,55 @@ const Dashboard: React.FC = () => {
   const submitMissionProof = async () => {
     if (!selectedMission || !proofImage) return;
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const submissionData = {
-        user_id: user.id,
-        mission_id: selectedMission.id,
-        mission_title: selectedMission.title,
-        proof_image: proofImage,
-        status: 'pending',
-        submitted_at: new Date().toISOString()
-      };
+    setVerifying(true);
+    setVerificationResult(null);
+    
+    try {
+      // AI Verification
+      const aiResult = await verifyMissionWithAI(
+        proofImage,
+        selectedMission.title,
+        selectedMission.description
+      );
       
-      // Store in localStorage as fallback
-      const submissions = JSON.parse(localStorage.getItem('mission_submissions') || '[]');
-      submissions.push(submissionData);
-      localStorage.setItem('mission_submissions', JSON.stringify(submissions));
+      setVerificationResult(aiResult);
       
-      setSelectedMission(null);
-      setProofImage('');
-      alert('Mission submitted for verification!');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const submissionData = {
+          user_id: user.id,
+          mission_id: selectedMission.id,
+          mission_title: selectedMission.title,
+          proof_image: proofImage,
+          status: aiResult.verified && aiResult.confidence >= 70 ? 'approved' : 'pending',
+          ai_verification: aiResult,
+          submitted_at: new Date().toISOString()
+        };
+        
+        // Store in localStorage as fallback
+        const submissions = JSON.parse(localStorage.getItem('mission_submissions') || '[]');
+        submissions.push(submissionData);
+        localStorage.setItem('mission_submissions', JSON.stringify(submissions));
+        
+        // Auto-approve if AI confidence is high
+        if (aiResult.verified && aiResult.confidence >= 70) {
+          await addPoints(user.id, selectedMission.points, `Mission completed: ${selectedMission.title}`);
+          setProfile(prev => prev ? {
+            ...prev,
+            eco_points: prev.eco_points + selectedMission.points
+          } : null);
+        }
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      setVerificationResult({
+        verified: false,
+        confidence: 0,
+        feedback: 'Verification failed. Your submission will be manually reviewed.'
+      });
     }
+    
+    setVerifying(false);
   };
 
   const loadProfile = async () => {
@@ -305,6 +336,8 @@ const Dashboard: React.FC = () => {
   const [selectedMission, setSelectedMission] = useState<any>(null);
   const [proofImage, setProofImage] = useState<string>('');
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'offline' | 'checking'>('checking');
+  const [verifying, setVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<any>(null);
 
   // Check connection status
   useEffect(() => {
@@ -1021,21 +1054,7 @@ const Dashboard: React.FC = () => {
                   </motion.div>
                 )}
 
-                {/* AI Learning Components */}
-                <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                  <div>
-                    <h3 className="text-xl font-bold mb-4 text-blue-400 flex items-center">
-                      <span className="mr-2">🤖</span> AI Tutor Chat
-                    </h3>
-                    <AITutor age={profile.age || 18} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-4 text-green-400 flex items-center">
-                      <span className="mr-2">📚</span> AI Generated Lesson
-                    </h3>
-                    <AILessonGenerator age={profile.age || 18} />
-                  </div>
-                </div>
+
 
                 {/* Interactive Learning */}
                 <div className="grid lg:grid-cols-2 gap-8 mb-8">
@@ -1273,6 +1292,14 @@ const Dashboard: React.FC = () => {
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.02 }}
+                            onClick={() => navigate('/leaderboard')}
+                            className="p-4 bg-slate-800/30 rounded-xl text-center hover:bg-slate-700/30 transition-colors"
+                          >
+                            <div className="text-2xl mb-2">🏆</div>
+                            <div className="text-sm font-semibold">Leaderboard</div>
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
                             onClick={() => navigate('/teams')}
                             className="p-4 bg-slate-800/30 rounded-xl text-center hover:bg-slate-700/30 transition-colors"
                           >
@@ -1417,6 +1444,8 @@ const Dashboard: React.FC = () => {
                 onClick={() => {
                   setSelectedMission(null);
                   setProofImage('');
+                  setVerificationResult(null);
+                  setVerifying(false);
                 }}
                 className="flex-1 bg-slate-700 text-white py-3 rounded-lg font-semibold hover:bg-slate-600 transition-colors"
               >
@@ -1426,19 +1455,46 @@ const Dashboard: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={submitMissionProof}
-                disabled={!proofImage}
+                disabled={!proofImage || verifying}
                 className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Submit for Verification
+                {verifying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    AI Verifying...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Submit for Verification
+                  </>
+                )}
               </motion.button>
             </div>
             
-            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-              <p className="text-blue-400 text-xs text-center">
-                📋 Your submission will be reviewed within 24 hours. Points will be awarded upon approval.
-              </p>
-            </div>
+            {verificationResult && (
+              <div className="mt-4">
+                <VerificationResult
+                  result={verificationResult}
+                  missionTitle={selectedMission.title}
+                  points={selectedMission.points}
+                  onContinue={() => {
+                    setSelectedMission(null);
+                    setProofImage('');
+                    setVerificationResult(null);
+                    setVerifying(false);
+                  }}
+                />
+              </div>
+            )}
+            
+            {!verificationResult && (
+              <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-blue-400 text-xs text-center">
+                  🤖 AI will instantly verify your submission. High-confidence verifications get immediate points!
+                </p>
+              </div>
+            )}
           </motion.div>
         </div>
       )}

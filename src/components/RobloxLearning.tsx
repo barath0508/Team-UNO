@@ -22,7 +22,7 @@ const RobloxLearning: React.FC = () => {
   };
 
   const gameAreas = [
-    { name: 'Solar City', requiredPoints: 0, description: 'Learn about solar energy' },
+    { name: 'Eco World', requiredPoints: 0, description: 'Learn about solar energy' },
     { name: 'Wind Valley', requiredPoints: 25, description: 'Explore wind power generation' },
     { name: 'Recycling Hub', requiredPoints: 50, description: 'Master waste management' },
     { name: 'Green Forest', requiredPoints: 100, description: 'Discover biodiversity' },
