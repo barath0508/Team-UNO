@@ -16,6 +16,7 @@ import Dashboard from './components/Dashboard';
 import EcoPoints from './components/EcoPoints';
 import RewardsHub from './components/RewardsHub';
 import EcoTeams from './components/EcoTeams';
+import Leaderboard from './components/Leaderboard';
 
 const HomePage = () => (
   <>
@@ -50,6 +51,7 @@ function App() {
           <Route path="/eco-points" element={<EcoPoints />} />
           <Route path="/rewards" element={<RewardsHub />} />
           <Route path="/teams" element={<EcoTeams />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

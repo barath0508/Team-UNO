@@ -41,7 +41,7 @@ const Dashboard: React.FC = () => {
   const [timerActive, setTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [showFirstTimeSetup, setShowFirstTimeSetup] = useState(false);
-  const [activeTab, setActiveTab] = useState('act');
+  const [activeTab, setActiveTab] = useState('learn');
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [showRewards, setShowRewards] = useState(false);
@@ -1085,47 +1085,73 @@ const Dashboard: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center mb-8"
+                  className="text-center mb-8 relative"
                 >
-                  <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-emerald-400 bg-clip-text text-transparent">
-                    Your Environmental Impact
-                  </h2>
-                  <p className="text-slate-400 text-lg">Track your positive contribution to the planet</p>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-emerald-500/10 rounded-3xl blur-2xl" />
+                  <div className="relative glass rounded-3xl p-12 border border-purple-500/30">
+                    <motion.div 
+                      className="text-6xl mb-4"
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      🌍
+                    </motion.div>
+                    <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-emerald-400 bg-clip-text text-transparent">
+                      Your Environmental Impact
+                    </h2>
+                    <p className="text-slate-300 text-xl mb-6">Track your positive contribution to the planet</p>
+                    <div className="inline-flex items-center px-6 py-3 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-emerald-400 font-semibold">
+                      <Trophy className="w-5 h-5 mr-2" />
+                      Level {Math.floor(profile.eco_points / 50) + 1} Eco Warrior
+                    </div>
+                  </div>
                 </motion.div>
 
-                {/* Impact Stats Grid */}
+                {/* Enhanced Impact Stats Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   {[
-                    { icon: '💧', label: 'Water Saved', verified: Math.floor(profile.eco_points * 0.8), pending: Math.floor(profile.eco_points * 0.4), unit: 'L', color: 'blue', img: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=200&h=120&fit=crop' },
-                    { icon: '🌱', label: 'CO₂ Offset', verified: (profile.eco_points * 0.03).toFixed(1), pending: (profile.eco_points * 0.02).toFixed(1), unit: 'kg', color: 'green', img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=120&fit=crop' },
-                    { icon: '♻️', label: 'Items Recycled', verified: Math.floor(profile.eco_points / 10), pending: Math.floor(profile.eco_points / 15), unit: '', color: 'yellow', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=200&h=120&fit=crop' },
-                    { icon: '⚡', label: 'Energy Saved', verified: (profile.eco_points * 0.1).toFixed(1), pending: (profile.eco_points * 0.05).toFixed(1), unit: 'kWh', color: 'purple', img: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=200&h=120&fit=crop' }
+                    { icon: '💧', label: 'Water Saved', verified: Math.floor(profile.eco_points * 1.2), pending: Math.floor(profile.eco_points * 0.6), unit: 'L', color: 'blue', gradient: 'from-blue-500/20 to-cyan-500/20', img: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=200&h=120&fit=crop' },
+                    { icon: '🌱', label: 'CO₂ Offset', verified: (profile.eco_points * 0.05).toFixed(1), pending: (profile.eco_points * 0.03).toFixed(1), unit: 'kg', color: 'green', gradient: 'from-green-500/20 to-emerald-500/20', img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=120&fit=crop' },
+                    { icon: '♻️', label: 'Items Recycled', verified: Math.floor(profile.eco_points / 8), pending: Math.floor(profile.eco_points / 12), unit: '', color: 'yellow', gradient: 'from-yellow-500/20 to-orange-500/20', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=200&h=120&fit=crop' },
+                    { icon: '⚡', label: 'Energy Saved', verified: (profile.eco_points * 0.15).toFixed(1), pending: (profile.eco_points * 0.08).toFixed(1), unit: 'kWh', color: 'purple', gradient: 'from-purple-500/20 to-pink-500/20', img: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=200&h=120&fit=crop' }
                   ].map((stat, index) => (
                     <motion.div
                       key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-emerald-500/50 transition-all group"
+                      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ delay: index * 0.15, type: "spring", stiffness: 100 }}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      className="relative group"
                     >
-                      <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <img src={stat.img} alt={stat.label} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative z-10 text-center">
-                        <div className="text-3xl mb-3">{stat.icon}</div>
-                        <div className={`text-2xl font-bold text-${stat.color}-400 mb-2`}>
-                          {stat.verified}{stat.unit}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                      <div className="relative overflow-hidden glass border border-slate-700/50 group-hover:border-emerald-500/50 rounded-3xl p-8 transition-all duration-500">
+                        <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <img src={stat.img} alt={stat.label} className="w-full h-full object-cover" />
                         </div>
-                        <div className="font-semibold text-white mb-2 text-sm">{stat.label}</div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center text-xs">
-                            <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                            <span className="text-green-400">Verified: {stat.verified}{stat.unit}</span>
+                        <div className="relative z-10 text-center">
+                          <motion.div 
+                            className="text-4xl mb-4 p-3 rounded-2xl bg-slate-800/30"
+                            animate={index === 0 ? { 
+                              rotate: [0, 10, -10, 0],
+                              scale: [1, 1.1, 1]
+                            } : {}}
+                            transition={{ duration: 3, repeat: Infinity }}
+                          >
+                            {stat.icon}
+                          </motion.div>
+                          <div className={`text-3xl font-bold text-${stat.color}-400 mb-3`}>
+                            {stat.verified}{stat.unit}
                           </div>
-                          <div className="flex items-center justify-center text-xs">
-                            <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
-                            <span className="text-yellow-400">Pending: {stat.pending}{stat.unit}</span>
+                          <div className="font-semibold text-white mb-4 text-lg">{stat.label}</div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-center text-sm bg-green-500/10 rounded-full px-3 py-1">
+                              <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                              <span className="text-green-400 font-medium">Verified: {stat.verified}{stat.unit}</span>
+                            </div>
+                            <div className="flex items-center justify-center text-sm bg-yellow-500/10 rounded-full px-3 py-1">
+                              <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                              <span className="text-yellow-400 font-medium">Pending: {stat.pending}{stat.unit}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1133,101 +1159,166 @@ const Dashboard: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Two Column Layout */}
+                {/* Environmental Impact Visualization */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="relative overflow-hidden glass rounded-3xl p-8 border border-emerald-500/30 mb-8"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5" />
+                  <div className="relative z-10">
+                    <h3 className="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+                      <span className="text-3xl mr-3">🌿</span>
+                      <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                        Real-World Impact Equivalent
+                      </span>
+                    </h3>
+                    <div className="grid md:grid-cols-3 gap-6">
+                      <div className="text-center p-6 bg-slate-800/30 rounded-2xl">
+                        <div className="text-4xl mb-3">🌳</div>
+                        <div className="text-2xl font-bold text-green-400 mb-2">
+                          {Math.floor(profile.eco_points / 25)}
+                        </div>
+                        <div className="text-slate-300">Trees Worth of CO₂ Absorbed</div>
+                      </div>
+                      <div className="text-center p-6 bg-slate-800/30 rounded-2xl">
+                        <div className="text-4xl mb-3">🏠</div>
+                        <div className="text-2xl font-bold text-blue-400 mb-2">
+                          {Math.floor(profile.eco_points / 100)}
+                        </div>
+                        <div className="text-slate-300">Homes Powered for a Day</div>
+                      </div>
+                      <div className="text-center p-6 bg-slate-800/30 rounded-2xl">
+                        <div className="text-4xl mb-3">🚗</div>
+                        <div className="text-2xl font-bold text-purple-400 mb-2">
+                          {Math.floor(profile.eco_points * 0.5)}
+                        </div>
+                        <div className="text-slate-300">Miles of Car Emissions Offset</div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Enhanced Two Column Layout */}
                 <div className="grid lg:grid-cols-2 gap-8">
                   {/* Rankings & Achievements */}
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
+                    transition={{ delay: 0.8 }}
                     className="space-y-6"
                   >
-                    {/* Rankings - Real-time calculations */}
-                    <div className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-yellow-500/30 transition-all group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Enhanced Rankings */}
+                    <div className="relative overflow-hidden glass border border-yellow-500/30 rounded-3xl p-8 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10">
-                        <h3 className="text-2xl font-bold mb-6 flex items-center">
-                          <Trophy className="w-7 h-7 mr-3 text-yellow-400" />
+                        <h3 className="text-3xl font-bold mb-8 flex items-center">
+                          <motion.div
+                            animate={{ rotate: [0, 360] }}
+                            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                          >
+                            <Trophy className="w-8 h-8 mr-4 text-yellow-400" />
+                          </motion.div>
                           <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
                             Your Rankings
                           </span>
                         </h3>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center p-4 bg-slate-800/30 rounded-xl">
+                        <div className="space-y-6">
+                          <motion.div 
+                            whileHover={{ scale: 1.02 }}
+                            className="flex justify-between items-center p-6 bg-slate-800/30 rounded-2xl border border-slate-700/50"
+                          >
                             <div>
-                              <div className="font-semibold">Current Level</div>
-                              <div className="text-sm text-slate-400">
+                              <div className="font-bold text-lg">Current Level</div>
+                              <div className="text-emerald-400 font-medium">
                                 {(() => {
                                   const level = Math.floor(profile.eco_points / 50) + 1;
-                                  if (level >= 10) return 'Eco Master';
-                                  if (level >= 7) return 'Green Guardian';
-                                  if (level >= 5) return 'Nature Protector';
-                                  if (level >= 3) return 'Eco Warrior';
-                                  return 'Eco Beginner';
+                                  if (level >= 10) return '🌟 Eco Master';
+                                  if (level >= 7) return '🛡️ Green Guardian';
+                                  if (level >= 5) return '🌳 Nature Protector';
+                                  if (level >= 3) return '⚔️ Eco Warrior';
+                                  return '🌱 Eco Beginner';
                                 })()}
                               </div>
                             </div>
-                            <span className="text-3xl font-bold text-yellow-400">{Math.floor(profile.eco_points / 50) + 1}</span>
-                          </div>
-                          <div className="flex justify-between items-center p-4 bg-slate-800/30 rounded-xl">
+                            <span className="text-4xl font-bold text-yellow-400">{Math.floor(profile.eco_points / 50) + 1}</span>
+                          </motion.div>
+                          <motion.div 
+                            whileHover={{ scale: 1.02 }}
+                            className="flex justify-between items-center p-6 bg-slate-800/30 rounded-2xl border border-slate-700/50"
+                          >
                             <div>
-                              <div className="font-semibold">Total Points</div>
-                              <div className="text-sm text-slate-400">Lifetime Achievement</div>
+                              <div className="font-bold text-lg">Total Points</div>
+                              <div className="text-slate-400">Lifetime Achievement</div>
                             </div>
-                            <span className="text-3xl font-bold text-orange-400">{profile.eco_points}</span>
-                          </div>
-                          <div className="flex justify-between items-center p-4 bg-slate-800/30 rounded-xl">
+                            <span className="text-4xl font-bold text-orange-400">{profile.eco_points}</span>
+                          </motion.div>
+                          <motion.div 
+                            whileHover={{ scale: 1.02 }}
+                            className="flex justify-between items-center p-6 bg-slate-800/30 rounded-2xl border border-slate-700/50"
+                          >
                             <div>
-                              <div className="font-semibold">Next Level</div>
-                              <div className="text-sm text-slate-400">Points needed</div>
+                              <div className="font-bold text-lg">Next Level</div>
+                              <div className="text-slate-400">Points needed</div>
                             </div>
-                            <span className="text-2xl font-bold text-emerald-400">{50 - (profile.eco_points % 50)}</span>
-                          </div>
+                            <span className="text-3xl font-bold text-emerald-400">{50 - (profile.eco_points % 50)}</span>
+                          </motion.div>
                         </div>
                         <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          onClick={() => setShowRewards(!showRewards)}
-                          className="w-full mt-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => navigate('/leaderboard')}
+                          className="w-full mt-8 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-4 rounded-2xl font-bold text-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-lg shadow-yellow-500/25"
                         >
-                          {showRewards ? 'Hide Rewards' : 'View Rewards →'}
+                          View Global Leaderboard 🏆
                         </motion.button>
                       </div>
                     </div>
 
-                    {/* Recent Achievements - Real-time based on points */}
-                    <div className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-emerald-500/30 transition-all group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Enhanced Achievements */}
+                    <div className="relative overflow-hidden glass border border-emerald-500/30 rounded-3xl p-8 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10">
-                        <h3 className="text-xl font-bold mb-4 flex items-center">
-                          <Award className="w-6 h-6 mr-3 text-emerald-400" />
-                          Achievements Unlocked
+                        <h3 className="text-2xl font-bold mb-6 flex items-center">
+                          <Award className="w-7 h-7 mr-3 text-emerald-400" />
+                          Recent Achievements
                         </h3>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {(() => {
                             const achievements = [];
-                            if (profile.eco_points >= 25) achievements.push({ icon: '🌱', name: 'Eco Starter', desc: 'Earned first 25 points' });
-                            if (profile.eco_points >= 50) achievements.push({ icon: '🏆', name: 'Level Up!', desc: 'Reached Level 2' });
-                            if (profile.eco_points >= 100) achievements.push({ icon: '♻️', name: 'Recycling Pro', desc: 'Earned 100+ points' });
-                            if (profile.eco_points >= 200) achievements.push({ icon: '🌍', name: 'Planet Protector', desc: 'Earned 200+ points' });
-                            if (profile.eco_points >= 500) achievements.push({ icon: '🌟', name: 'Eco Master', desc: 'Earned 500+ points' });
+                            if (profile.eco_points >= 25) achievements.push({ icon: '🌱', name: 'Eco Starter', desc: 'Earned first 25 points', color: 'text-green-400' });
+                            if (profile.eco_points >= 50) achievements.push({ icon: '🏆', name: 'Level Up!', desc: 'Reached Level 2', color: 'text-yellow-400' });
+                            if (profile.eco_points >= 100) achievements.push({ icon: '♻️', name: 'Recycling Pro', desc: 'Earned 100+ points', color: 'text-blue-400' });
+                            if (profile.eco_points >= 200) achievements.push({ icon: '🌍', name: 'Planet Protector', desc: 'Earned 200+ points', color: 'text-purple-400' });
+                            if (profile.eco_points >= 500) achievements.push({ icon: '🌟', name: 'Eco Master', desc: 'Earned 500+ points', color: 'text-pink-400' });
                             
-                            return achievements.slice(-3).map((achievement, index) => (
-                              <div key={index} className="flex items-center p-3 bg-slate-800/30 rounded-lg">
-                                <span className="text-2xl mr-3">{achievement.icon}</span>
-                                <div>
-                                  <div className="font-semibold text-sm">{achievement.name}</div>
-                                  <div className="text-xs text-slate-400">{achievement.desc}</div>
+                            return achievements.slice(-4).map((achievement, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="flex items-center p-4 bg-slate-800/30 rounded-xl border border-slate-700/30 hover:border-emerald-500/50 transition-all"
+                              >
+                                <span className="text-3xl mr-4">{achievement.icon}</span>
+                                <div className="flex-1">
+                                  <div className={`font-bold ${achievement.color}`}>{achievement.name}</div>
+                                  <div className="text-sm text-slate-400">{achievement.desc}</div>
                                 </div>
-                              </div>
+                                <div className="text-emerald-400 text-sm font-medium">✓ Unlocked</div>
+                              </motion.div>
                             ));
                           })()}
                           {profile.eco_points < 25 && (
-                            <div className="flex items-center p-3 bg-slate-800/30 rounded-lg opacity-50">
-                              <span className="text-2xl mr-3">🔒</span>
-                              <div>
-                                <div className="font-semibold text-sm">Eco Starter</div>
-                                <div className="text-xs text-slate-400">Earn 25 points to unlock</div>
+                            <div className="flex items-center p-4 bg-slate-800/30 rounded-xl border border-slate-700/30 opacity-60">
+                              <span className="text-3xl mr-4">🔒</span>
+                              <div className="flex-1">
+                                <div className="font-bold text-slate-400">Eco Starter</div>
+                                <div className="text-sm text-slate-500">Earn 25 points to unlock</div>
                               </div>
+                              <div className="text-slate-500 text-sm">{25 - profile.eco_points} points needed</div>
                             </div>
                           )}
                         </div>
@@ -1235,92 +1326,100 @@ const Dashboard: React.FC = () => {
                     </div>
                   </motion.div>
 
-                  {/* Progress & Actions */}
+                  {/* Enhanced Progress & Actions */}
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 }}
+                    transition={{ delay: 1 }}
                     className="space-y-6"
                   >
-                    {/* Monthly Progress */}
-                    <div className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-blue-500/30 transition-all group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Enhanced Monthly Progress */}
+                    <div className="relative overflow-hidden glass border border-blue-500/30 rounded-3xl p-8 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10">
-                        <h3 className="text-xl font-bold mb-4 flex items-center">
-                          <Calendar className="w-6 h-6 mr-3 text-blue-400" />
-                          This Month's Progress
+                        <h3 className="text-2xl font-bold mb-6 flex items-center">
+                          <Calendar className="w-7 h-7 mr-3 text-blue-400" />
+                          Progress Tracker
                         </h3>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                           <div>
-                            <div className="flex justify-between mb-2">
-                              <span className="text-sm">Daily Task</span>
-                              <span className="text-sm font-semibold">{taskCompleted ? 'Completed' : 'Pending'}</span>
+                            <div className="flex justify-between mb-3">
+                              <span className="font-semibold">Daily Task</span>
+                              <span className={`font-bold ${taskCompleted ? 'text-green-400' : 'text-yellow-400'}`}>
+                                {taskCompleted ? '✅ Completed' : '⏳ Pending'}
+                              </span>
                             </div>
-                            <div className="w-full bg-slate-700 rounded-full h-2">
-                              <div className={`h-2 rounded-full ${taskCompleted ? 'bg-green-500 w-full' : 'bg-blue-500 w-0'}`} />
+                            <div className="w-full bg-slate-700 rounded-full h-3">
+                              <motion.div 
+                                className={`h-3 rounded-full ${taskCompleted ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'}`}
+                                initial={{ width: 0 }}
+                                animate={{ width: taskCompleted ? '100%' : '0%' }}
+                                transition={{ duration: 1, ease: 'easeOut' }}
+                              />
                             </div>
                           </div>
                           <div>
-                            <div className="flex justify-between mb-2">
-                              <span className="text-sm">Next Level Progress</span>
-                              <span className="text-sm font-semibold">{profile.eco_points % 50}/50</span>
+                            <div className="flex justify-between mb-3">
+                              <span className="font-semibold">Next Level Progress</span>
+                              <span className="font-bold text-emerald-400">{profile.eco_points % 50}/50</span>
                             </div>
-                            <div className="w-full bg-slate-700 rounded-full h-2">
-                              <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${((profile.eco_points % 50) / 50) * 100}%`}} />
+                            <div className="w-full bg-slate-700 rounded-full h-3">
+                              <motion.div 
+                                className="bg-gradient-to-r from-emerald-500 to-teal-500 h-3 rounded-full"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${((profile.eco_points % 50) / 50) * 100}%` }}
+                                transition={{ duration: 2, ease: 'easeOut' }}
+                              />
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Quick Actions */}
-                    <div className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-purple-500/30 transition-all group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Enhanced Quick Actions */}
+                    <div className="relative overflow-hidden glass border border-purple-500/30 rounded-3xl p-8 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10">
-                        <h3 className="text-xl font-bold mb-4 flex items-center">
-                          <Zap className="w-6 h-6 mr-3 text-purple-400" />
+                        <h3 className="text-2xl font-bold mb-6 flex items-center">
+                          <Zap className="w-7 h-7 mr-3 text-purple-400" />
                           Quick Actions
                         </h3>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-4">
                           <motion.button
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => navigate('/eco-points')}
-                            className="p-4 bg-slate-800/30 rounded-xl text-center hover:bg-slate-700/30 transition-colors"
+                            className="p-6 bg-slate-800/30 rounded-2xl text-center hover:bg-slate-700/30 transition-all border border-slate-700/50 hover:border-emerald-500/50"
                           >
-                            <div className="text-2xl mb-2">📊</div>
-                            <div className="text-sm font-semibold">Eco Points</div>
+                            <div className="text-3xl mb-3">📊</div>
+                            <div className="font-bold">Eco Points</div>
                           </motion.button>
                           <motion.button
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => navigate('/leaderboard')}
-                            className="p-4 bg-slate-800/30 rounded-xl text-center hover:bg-slate-700/30 transition-colors"
+                            className="p-6 bg-slate-800/30 rounded-2xl text-center hover:bg-slate-700/30 transition-all border border-slate-700/50 hover:border-yellow-500/50"
                           >
-                            <div className="text-2xl mb-2">🏆</div>
-                            <div className="text-sm font-semibold">Leaderboard</div>
+                            <div className="text-3xl mb-3">🏆</div>
+                            <div className="font-bold">Leaderboard</div>
                           </motion.button>
                           <motion.button
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => navigate('/teams')}
-                            className="p-4 bg-slate-800/30 rounded-xl text-center hover:bg-slate-700/30 transition-colors"
+                            className="p-6 bg-slate-800/30 rounded-2xl text-center hover:bg-slate-700/30 transition-all border border-slate-700/50 hover:border-blue-500/50"
                           >
-                            <div className="text-2xl mb-2">👥</div>
-                            <div className="text-sm font-semibold">Teams</div>
+                            <div className="text-3xl mb-3">👥</div>
+                            <div className="font-bold">Teams</div>
                           </motion.button>
                           <motion.button
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => setActiveTab('learn')}
-                            className="p-4 bg-slate-800/30 rounded-xl text-center hover:bg-slate-700/30 transition-colors"
+                            className="p-6 bg-slate-800/30 rounded-2xl text-center hover:bg-slate-700/30 transition-all border border-slate-700/50 hover:border-purple-500/50"
                           >
-                            <div className="text-2xl mb-2">🎮</div>
-                            <div className="text-sm font-semibold">Play Game</div>
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            onClick={() => setActiveTab('act')}
-                            className="p-4 bg-slate-800/30 rounded-xl text-center hover:bg-slate-700/30 transition-colors"
-                          >
-                            <div className="text-2xl mb-2">🎯</div>
-                            <div className="text-sm font-semibold">Missions</div>
+                            <div className="text-3xl mb-3">🎮</div>
+                            <div className="font-bold">Play Game</div>
                           </motion.button>
                         </div>
                       </div>
