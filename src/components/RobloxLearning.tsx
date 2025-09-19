@@ -198,15 +198,16 @@ const RobloxLearning: React.FC = () => {
                   {isUnlocked ? (
                     <div className="space-y-3">
                       <motion.a
-                        href={`https://www.roblox.com/games/eco-universe-${area.name.toLowerCase().replace(' ', '-')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="block w-full py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 text-center"
-                      >
-                        🎮 Enter World
-                      </motion.a>
+  href="https://www.roblox.com/games/99201565048691/EcoWorld"
+  target="_blank"
+  rel="noopener noreferrer"
+  whileHover={{ scale: 1.05, y: -2 }}
+  whileTap={{ scale: 0.95 }}
+  className="block w-full py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 text-center"
+>
+  🎮 Enter World
+</motion.a>
+
                       <div className="grid grid-cols-2 gap-2">
                         <motion.button
                           whileHover={{ scale: 1.02 }}
