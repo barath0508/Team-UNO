@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Trophy, Target, TrendingUp, MapPin, BookOpen, Leaf, Award, Users, Sparkles, Play, CheckCircle, Clock, Pause, LogOut, Camera, Upload, Calendar, Zap } from 'lucide-react';
+import { User, Trophy, Target, TrendingUp, MapPin, BookOpen, Leaf, Award, Users, Sparkles, Play, CheckCircle, Clock, Pause, LogOut, Camera, Upload, Calendar, Zap, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { getTodayTask } from '../lib/dailyTasks';
@@ -12,7 +12,13 @@ import Level1StubbleBurning from './Level1StubbleBurning';
 import EnvironmentalLevelLesson from './EnvironmentalLevelLesson';
 import QuizComponent from './QuizComponent';
 import LearningContent from './LearningContent';
+import AITutor from './AITutor';
+import AILessonGenerator from './AILessonGenerator';
 import StubbleBurningLesson from './StubbleBurningLesson';
+import ProfileEditor from './ProfileEditor';
+import NotificationCenter from './NotificationCenter';
+import RewardsSystem from './RewardsSystem';
+import SupportChat from './SupportChat';
 
 interface Profile {
   eco_points: number;
@@ -35,6 +41,8 @@ const Dashboard: React.FC = () => {
   const [showFirstTimeSetup, setShowFirstTimeSetup] = useState(false);
   const [activeTab, setActiveTab] = useState('act');
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [showRewards, setShowRewards] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -372,6 +380,23 @@ const Dashboard: React.FC = () => {
           </motion.div>
           
           <div className="flex items-center space-x-6">
+            {/* Profile Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              onClick={() => setShowProfileEditor(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-slate-700/50 to-slate-600/50 border border-slate-600/50 rounded-full text-slate-300 hover:text-white transition-all"
+            >
+              <div className="w-6 h-6 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                {profile.full_name?.charAt(0) || 'U'}
+              </div>
+              <span className="text-sm">{profile.full_name}</span>
+            </motion.button>
+            
+            {/* Notifications */}
+            <div className="relative">
+              <NotificationCenter profile={profile} taskCompleted={taskCompleted} />
+            </div>
+            
             {/* Connection Status Indicator */}
             <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
               connectionStatus === 'online' 
@@ -389,7 +414,7 @@ const Dashboard: React.FC = () => {
             
             <motion.button
               whileHover={{ scale: 1.05 }}
-              onClick={() => navigate('/rewards')}
+              onClick={() => setShowRewards(!showRewards)}
               className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-full text-yellow-400 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all"
             >
               <Award className="w-4 h-4" />
@@ -635,8 +660,8 @@ const Dashboard: React.FC = () => {
                   <p className="text-slate-400 text-lg">Complete missions to earn points and make real environmental impact</p>
                 </motion.div>
 
-                {/* Mission Stats */}
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                {/* Mission Stats - Real-time calculations */}
+                <div className="grid md:grid-cols-4 gap-6 mb-8">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -662,6 +687,15 @@ const Dashboard: React.FC = () => {
                   >
                     <div className="text-3xl font-bold text-yellow-400 mb-2">{profile.eco_points}</div>
                     <div className="text-slate-300">Total Points</div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 text-center"
+                  >
+                    <div className="text-3xl font-bold text-purple-400 mb-2">{Math.floor(profile.eco_points / 50) + 1}</div>
+                    <div className="text-slate-300">Current Level</div>
                   </motion.div>
                 </div>
 
@@ -744,7 +778,7 @@ const Dashboard: React.FC = () => {
                               onClick={() => setSelectedMission(challenge)}
                               className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3 rounded-full font-semibold hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/25"
                             >
-                              Start Mission
+                              Complete Mission
                             </motion.button>
                           </div>
                         </div>
@@ -757,7 +791,7 @@ const Dashboard: React.FC = () => {
             
             {activeTab === 'learn' && (
               <div className="space-y-8">
-                {/* Level Selection */}
+                {/* Level Selection - Real-time progress */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -790,8 +824,10 @@ const Dashboard: React.FC = () => {
                       const levelNames = ['Beginner', 'Explorer', 'Innovator', 'Expert', 'Master'];
                       const levelIcons = ['🌱', '🌿', '🌳', '🌍', '🌟'];
                       const levelTopics = ['Stubble Burning', 'Water Crisis', 'Pollinators', 'Climate Change', 'Plastic Pollution'];
-                      const completedLevels = [1, 2]; // Mock completed levels
-                      const isCompleted = completedLevels.includes(level);
+                      // Real-time calculation based on user level
+                      const userLevel = Math.floor(profile.eco_points / 50) + 1;
+                      const isCompleted = level <= userLevel;
+                      const isUnlocked = level <= userLevel || level === userLevel + 1;
                       
                       return (
                         <motion.div
@@ -854,7 +890,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </motion.div>
 
-                {/* Interactive Progress Bar */}
+                {/* Interactive Progress Bar - Real-time calculation */}
                 {selectedLevel && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -876,15 +912,30 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-emerald-400">75%</div>
-                        <div className="text-xs text-slate-400">Complete</div>
+                        {(() => {
+                          const userLevel = Math.floor(profile.eco_points / 50) + 1;
+                          const progressPercent = selectedLevel <= userLevel ? 100 : 
+                            selectedLevel === userLevel + 1 ? ((profile.eco_points % 50) / 50) * 100 : 0;
+                          return (
+                            <>
+                              <div className="text-2xl font-bold text-emerald-400">{Math.round(progressPercent)}%</div>
+                              <div className="text-xs text-slate-400">Complete</div>
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
                       <motion.div 
                         className="bg-gradient-to-r from-emerald-500 to-teal-500 h-3 rounded-full"
                         initial={{ width: 0 }}
-                        animate={{ width: "75%" }}
+                        animate={{ 
+                          width: `${(() => {
+                            const userLevel = Math.floor(profile.eco_points / 50) + 1;
+                            return selectedLevel <= userLevel ? 100 : 
+                              selectedLevel === userLevel + 1 ? ((profile.eco_points % 50) / 50) * 100 : 0;
+                          })()}%`
+                        }}
                         transition={{ duration: 2, ease: "easeOut" }}
                       />
                     </div>
@@ -970,6 +1021,38 @@ const Dashboard: React.FC = () => {
                   </motion.div>
                 )}
 
+                {/* AI Learning Components */}
+                <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-blue-400 flex items-center">
+                      <span className="mr-2">🤖</span> AI Tutor Chat
+                    </h3>
+                    <AITutor age={profile.age || 18} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-green-400 flex items-center">
+                      <span className="mr-2">📚</span> AI Generated Lesson
+                    </h3>
+                    <AILessonGenerator age={profile.age || 18} />
+                  </div>
+                </div>
+
+                {/* Interactive Learning */}
+                <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center">
+                      <span className="mr-2">🧠</span> Interactive Quiz
+                    </h3>
+                    <QuizComponent age={profile.age || 18} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-4 text-orange-400 flex items-center">
+                      <span className="mr-2">📖</span> Learning Topics
+                    </h3>
+                    <LearningContent age={profile.age || 18} />
+                  </div>
+                </div>
+
                 {/* Game Learning */}
                 <div className="w-full">
                   <RobloxLearning />
@@ -994,10 +1077,10 @@ const Dashboard: React.FC = () => {
                 {/* Impact Stats Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   {[
-                    { icon: '💧', label: 'Water Saved', value: `${Math.floor(profile.eco_points * 1.2)}L`, color: 'blue', desc: 'Based on completed missions', img: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=200&h=120&fit=crop' },
-                    { icon: '🌱', label: 'CO₂ Offset', value: `${(profile.eco_points * 0.05).toFixed(1)}kg`, color: 'green', desc: 'Environmental impact', img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=120&fit=crop' },
-                    { icon: '♻️', label: 'Items Recycled', value: `${Math.floor(profile.eco_points / 8)}`, color: 'yellow', desc: 'Waste diverted from landfill', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=200&h=120&fit=crop' },
-                    { icon: '⚡', label: 'Energy Saved', value: `${(profile.eco_points * 0.15).toFixed(1)}kWh`, color: 'purple', desc: 'Power conservation', img: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=200&h=120&fit=crop' }
+                    { icon: '💧', label: 'Water Saved', verified: Math.floor(profile.eco_points * 0.8), pending: Math.floor(profile.eco_points * 0.4), unit: 'L', color: 'blue', img: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=200&h=120&fit=crop' },
+                    { icon: '🌱', label: 'CO₂ Offset', verified: (profile.eco_points * 0.03).toFixed(1), pending: (profile.eco_points * 0.02).toFixed(1), unit: 'kg', color: 'green', img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=120&fit=crop' },
+                    { icon: '♻️', label: 'Items Recycled', verified: Math.floor(profile.eco_points / 10), pending: Math.floor(profile.eco_points / 15), unit: '', color: 'yellow', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=200&h=120&fit=crop' },
+                    { icon: '⚡', label: 'Energy Saved', verified: (profile.eco_points * 0.1).toFixed(1), pending: (profile.eco_points * 0.05).toFixed(1), unit: 'kWh', color: 'purple', img: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=200&h=120&fit=crop' }
                   ].map((stat, index) => (
                     <motion.div
                       key={stat.label}
@@ -1012,9 +1095,20 @@ const Dashboard: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10 text-center">
                         <div className="text-3xl mb-3">{stat.icon}</div>
-                        <div className={`text-2xl font-bold text-${stat.color}-400 mb-2`}>{stat.value}</div>
-                        <div className="font-semibold text-white mb-1 text-sm">{stat.label}</div>
-                        <div className="text-xs text-slate-400">{stat.desc}</div>
+                        <div className={`text-2xl font-bold text-${stat.color}-400 mb-2`}>
+                          {stat.verified}{stat.unit}
+                        </div>
+                        <div className="font-semibold text-white mb-2 text-sm">{stat.label}</div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-center text-xs">
+                            <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                            <span className="text-green-400">Verified: {stat.verified}{stat.unit}</span>
+                          </div>
+                          <div className="flex items-center justify-center text-xs">
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                            <span className="text-yellow-400">Pending: {stat.pending}{stat.unit}</span>
+                          </div>
+                        </div>
                       </div>
                     </motion.div>
                   ))}
@@ -1029,7 +1123,7 @@ const Dashboard: React.FC = () => {
                     transition={{ delay: 0.5 }}
                     className="space-y-6"
                   >
-                    {/* Rankings */}
+                    {/* Rankings - Real-time calculations */}
                     <div className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-yellow-500/30 transition-all group">
                       <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10">
@@ -1043,9 +1137,18 @@ const Dashboard: React.FC = () => {
                           <div className="flex justify-between items-center p-4 bg-slate-800/30 rounded-xl">
                             <div>
                               <div className="font-semibold">Current Level</div>
-                              <div className="text-sm text-slate-400">Eco Warrior Status</div>
+                              <div className="text-sm text-slate-400">
+                                {(() => {
+                                  const level = Math.floor(profile.eco_points / 50) + 1;
+                                  if (level >= 10) return 'Eco Master';
+                                  if (level >= 7) return 'Green Guardian';
+                                  if (level >= 5) return 'Nature Protector';
+                                  if (level >= 3) return 'Eco Warrior';
+                                  return 'Eco Beginner';
+                                })()}
+                              </div>
                             </div>
-                            <span className="text-3xl font-bold text-yellow-400">{profile.level}</span>
+                            <span className="text-3xl font-bold text-yellow-400">{Math.floor(profile.eco_points / 50) + 1}</span>
                           </div>
                           <div className="flex justify-between items-center p-4 bg-slate-800/30 rounded-xl">
                             <div>
@@ -1054,40 +1157,60 @@ const Dashboard: React.FC = () => {
                             </div>
                             <span className="text-3xl font-bold text-orange-400">{profile.eco_points}</span>
                           </div>
+                          <div className="flex justify-between items-center p-4 bg-slate-800/30 rounded-xl">
+                            <div>
+                              <div className="font-semibold">Next Level</div>
+                              <div className="text-sm text-slate-400">Points needed</div>
+                            </div>
+                            <span className="text-2xl font-bold text-emerald-400">{50 - (profile.eco_points % 50)}</span>
+                          </div>
                         </div>
                         <motion.button
                           whileHover={{ scale: 1.02 }}
-                          onClick={() => navigate('/rewards')}
+                          onClick={() => setShowRewards(!showRewards)}
                           className="w-full mt-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all"
                         >
-                          View Rewards →
+                          {showRewards ? 'Hide Rewards' : 'View Rewards →'}
                         </motion.button>
                       </div>
                     </div>
 
-                    {/* Recent Achievements */}
+                    {/* Recent Achievements - Real-time based on points */}
                     <div className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-emerald-500/30 transition-all group">
                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10">
                         <h3 className="text-xl font-bold mb-4 flex items-center">
                           <Award className="w-6 h-6 mr-3 text-emerald-400" />
-                          Recent Achievements
+                          Achievements Unlocked
                         </h3>
                         <div className="space-y-3">
-                          <div className="flex items-center p-3 bg-slate-800/30 rounded-lg">
-                            <span className="text-2xl mr-3">🌱</span>
-                            <div>
-                              <div className="font-semibold text-sm">Tree Hugger</div>
-                              <div className="text-xs text-slate-400">Planted your first tree</div>
+                          {(() => {
+                            const achievements = [];
+                            if (profile.eco_points >= 25) achievements.push({ icon: '🌱', name: 'Eco Starter', desc: 'Earned first 25 points' });
+                            if (profile.eco_points >= 50) achievements.push({ icon: '🏆', name: 'Level Up!', desc: 'Reached Level 2' });
+                            if (profile.eco_points >= 100) achievements.push({ icon: '♻️', name: 'Recycling Pro', desc: 'Earned 100+ points' });
+                            if (profile.eco_points >= 200) achievements.push({ icon: '🌍', name: 'Planet Protector', desc: 'Earned 200+ points' });
+                            if (profile.eco_points >= 500) achievements.push({ icon: '🌟', name: 'Eco Master', desc: 'Earned 500+ points' });
+                            
+                            return achievements.slice(-3).map((achievement, index) => (
+                              <div key={index} className="flex items-center p-3 bg-slate-800/30 rounded-lg">
+                                <span className="text-2xl mr-3">{achievement.icon}</span>
+                                <div>
+                                  <div className="font-semibold text-sm">{achievement.name}</div>
+                                  <div className="text-xs text-slate-400">{achievement.desc}</div>
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                          {profile.eco_points < 25 && (
+                            <div className="flex items-center p-3 bg-slate-800/30 rounded-lg opacity-50">
+                              <span className="text-2xl mr-3">🔒</span>
+                              <div>
+                                <div className="font-semibold text-sm">Eco Starter</div>
+                                <div className="text-xs text-slate-400">Earn 25 points to unlock</div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center p-3 bg-slate-800/30 rounded-lg">
-                            <span className="text-2xl mr-3">♻️</span>
-                            <div>
-                              <div className="font-semibold text-sm">Recycling Pro</div>
-                              <div className="text-xs text-slate-400">Recycled 10 items</div>
-                            </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1179,6 +1302,37 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             )}
+            
+            {/* Rewards System Modal */}
+            {showRewards && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+                onClick={() => setShowRewards(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-slate-900 rounded-2xl p-8 max-w-4xl w-full max-h-[80vh] overflow-y-auto border border-slate-700"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold text-white">Rewards & Achievements</h2>
+                    <button
+                      onClick={() => setShowRewards(false)}
+                      className="text-slate-400 hover:text-white"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <RewardsSystem 
+                    profile={profile} 
+                    onClaim={(rewardId) => console.log('Claimed:', rewardId)} 
+                  />
+                </motion.div>
+              </motion.div>
+            )}
           </div>
 
 
@@ -1193,6 +1347,15 @@ const Dashboard: React.FC = () => {
         }}
       />
       
+      <ProfileEditor
+        isOpen={showProfileEditor}
+        onClose={() => setShowProfileEditor(false)}
+        profile={profile}
+        onUpdate={(updatedProfile) => setProfile(updatedProfile)}
+      />
+      
+      <SupportChat />
+      
       {/* Mission Verification Modal */}
       {selectedMission && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -1202,19 +1365,33 @@ const Dashboard: React.FC = () => {
             className="bg-slate-900 rounded-2xl p-8 max-w-md w-full mx-4 border border-slate-700"
           >
             <div className="text-center mb-6">
-              <Camera className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-2">Submit Proof</h2>
-              <p className="text-slate-400">{selectedMission.title}</p>
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-8 h-8 text-emerald-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Complete Mission</h2>
+              <p className="text-slate-400 mb-2">{selectedMission.title}</p>
+              <div className="inline-flex items-center px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium">
+                +{selectedMission.points} Eco Points
+              </div>
             </div>
 
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-slate-700 rounded-lg p-6 text-center">
+              <div className="bg-slate-800/30 rounded-lg p-4 mb-4">
+                <h4 className="font-semibold text-white mb-2">Mission Requirements:</h4>
+                <p className="text-slate-300 text-sm">{selectedMission.description}</p>
+              </div>
+              
+              <div className="border-2 border-dashed border-slate-700 rounded-lg p-6 text-center hover:border-emerald-500/50 transition-colors">
                 {proofImage ? (
-                  <img src={proofImage} alt="Proof" className="w-full h-32 object-cover rounded-lg mb-4" />
+                  <div className="space-y-4">
+                    <img src={proofImage} alt="Proof" className="w-full h-32 object-cover rounded-lg" />
+                    <div className="text-green-400 text-sm font-medium">✓ Photo uploaded successfully</div>
+                  </div>
                 ) : (
                   <div className="py-8">
                     <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                    <p className="text-slate-400">Upload photo proof</p>
+                    <p className="text-slate-400 mb-2">Upload photo proof of completion</p>
+                    <p className="text-xs text-slate-500">Required for mission verification</p>
                   </div>
                 )}
                 <input
@@ -1226,9 +1403,9 @@ const Dashboard: React.FC = () => {
                 />
                 <label
                   htmlFor="proof-upload"
-                  className="inline-block bg-slate-800 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-slate-700 transition-colors"
+                  className="inline-block bg-gradient-to-r from-slate-700 to-slate-600 text-white px-6 py-2 rounded-lg cursor-pointer hover:from-slate-600 hover:to-slate-500 transition-all mt-4"
                 >
-                  Choose Photo
+                  {proofImage ? 'Change Photo' : 'Choose Photo'}
                 </label>
               </div>
             </div>
@@ -1250,10 +1427,17 @@ const Dashboard: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={submitMissionProof}
                 disabled={!proofImage}
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Submit
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Submit for Verification
               </motion.button>
+            </div>
+            
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-blue-400 text-xs text-center">
+                📋 Your submission will be reviewed within 24 hours. Points will be awarded upon approval.
+              </p>
             </div>
           </motion.div>
         </div>

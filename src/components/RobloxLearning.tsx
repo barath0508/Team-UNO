@@ -23,10 +23,10 @@ const RobloxLearning: React.FC = () => {
 
   const gameAreas = [
     { name: 'Solar City', requiredPoints: 0, description: 'Learn about solar energy' },
-    { name: 'Wind Valley', requiredPoints: 100, description: 'Explore wind power generation' },
-    { name: 'Recycling Hub', requiredPoints: 200, description: 'Master waste management' },
-    { name: 'Green Forest', requiredPoints: 300, description: 'Discover biodiversity' },
-    { name: 'Ocean Cleanup', requiredPoints: 500, description: 'Save marine life' }
+    { name: 'Wind Valley', requiredPoints: 25, description: 'Explore wind power generation' },
+    { name: 'Recycling Hub', requiredPoints: 50, description: 'Master waste management' },
+    { name: 'Green Forest', requiredPoints: 100, description: 'Discover biodiversity' },
+    { name: 'Ocean Cleanup', requiredPoints: 200, description: 'Save marine life' }
   ];
 
   if (loading) {
@@ -84,7 +84,7 @@ const RobloxLearning: React.FC = () => {
                   className="group"
                 >
                   <div className="text-4xl font-bold text-green-400 mb-2 group-hover:text-green-300 transition-colors">
-                    {gameData?.gameData.unlockedAreas || 0}
+                    {gameAreas.filter(area => (gameData?.ecoPoints || 0) >= area.requiredPoints).length}
                   </div>
                   <div className="text-slate-400 font-medium group-hover:text-slate-300 transition-colors">
                     🏝️ Areas Unlocked
@@ -95,7 +95,14 @@ const RobloxLearning: React.FC = () => {
                   className="group"
                 >
                   <div className="text-4xl font-bold text-purple-400 mb-2 group-hover:text-purple-300 transition-colors">
-                    {gameData?.gameData.playerRank || 'Beginner'}
+                    {(() => {
+                      const points = gameData?.ecoPoints || 0;
+                      if (points >= 500) return 'Eco Master';
+                      if (points >= 200) return 'Green Guardian';
+                      if (points >= 100) return 'Nature Protector';
+                      if (points >= 50) return 'Eco Warrior';
+                      return 'Beginner';
+                    })()}
                   </div>
                   <div className="text-slate-400 font-medium group-hover:text-slate-300 transition-colors">
                     🏆 Current Rank
@@ -182,21 +189,47 @@ const RobloxLearning: React.FC = () => {
                       <div className="text-orange-400 font-semibold text-center">
                         🔒 Requires {area.requiredPoints} eco points to unlock
                       </div>
+                      <div className="text-slate-400 text-sm text-center mt-2">
+                        {Math.max(0, area.requiredPoints - (gameData?.ecoPoints || 0))} points needed
+                      </div>
                     </motion.div>
                   )}
                   
-                  <motion.button
-                    whileHover={isUnlocked ? { scale: 1.05, y: -2 } : {}}
-                    whileTap={isUnlocked ? { scale: 0.95 } : {}}
-                    disabled={!isUnlocked}
-                    className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
-                      isUnlocked
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40'
-                        : 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
-                    }`}
-                  >
-                    {isUnlocked ? '🎮 Enter World' : '🔒 Locked'}
-                  </motion.button>
+                  {isUnlocked ? (
+                    <div className="space-y-3">
+                      <motion.a
+                        href={`https://www.roblox.com/games/eco-universe-${area.name.toLowerCase().replace(' ', '-')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="block w-full py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 text-center"
+                      >
+                        🎮 Enter World
+                      </motion.a>
+                      <div className="grid grid-cols-2 gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          className="py-2 px-3 bg-slate-800/50 text-slate-300 rounded-lg text-sm hover:bg-slate-700/50 transition-colors"
+                        >
+                          🎲 Mini-Game
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          className="py-2 px-3 bg-slate-800/50 text-slate-300 rounded-lg text-sm hover:bg-slate-700/50 transition-colors"
+                        >
+                          🔍 AR View
+                        </motion.button>
+                      </div>
+                    </div>
+                  ) : (
+                    <motion.button
+                      disabled
+                      className="w-full py-4 rounded-2xl font-bold text-lg bg-slate-700/50 text-slate-500 cursor-not-allowed transition-all duration-300"
+                    >
+                      🔒 Locked
+                    </motion.button>
+                  )}
                 </div>
               </div>
             </motion.div>
