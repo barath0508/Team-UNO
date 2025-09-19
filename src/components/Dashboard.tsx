@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Trophy, Target, TrendingUp, MapPin, BookOpen, Leaf, Award, Users, Sparkles, Play, CheckCircle, Clock, Pause, LogOut, Camera, Upload, BarChart3, Calendar, Zap } from 'lucide-react';
+import { User, Trophy, Target, TrendingUp, MapPin, BookOpen, Leaf, Award, Users, Sparkles, Play, CheckCircle, Clock, Pause, LogOut, Camera, Upload, Calendar, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { getTodayTask } from '../lib/dailyTasks';
@@ -8,8 +8,11 @@ import { addPoints } from '../lib/ecoPointsSystem';
 import FirstTimeSetup from './FirstTimeSetup';
 import { getCurrentLocation, generateLocationTasks } from '../lib/locationTasks';
 import RobloxLearning from './RobloxLearning';
+import Level1StubbleBurning from './Level1StubbleBurning';
+import EnvironmentalLevelLesson from './EnvironmentalLevelLesson';
 import QuizComponent from './QuizComponent';
 import LearningContent from './LearningContent';
+import StubbleBurningLesson from './StubbleBurningLesson';
 
 interface Profile {
   eco_points: number;
@@ -31,6 +34,7 @@ const Dashboard: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [showFirstTimeSetup, setShowFirstTimeSetup] = useState(false);
   const [activeTab, setActiveTab] = useState('act');
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -133,7 +137,7 @@ const Dashboard: React.FC = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user && dailyTask && !taskCompleted) {
       try {
-        await addPoints(user.id, dailyTask.points, `Daily task: ${dailyTask.title}`);
+        const newPoints = await addPoints(user.id, dailyTask.points, `Daily task: ${dailyTask.title}`);
         
         // Mark as completed in localStorage
         const completionKey = `task_completed_${user.id}_${dailyTask.date}`;
@@ -141,7 +145,15 @@ const Dashboard: React.FC = () => {
         
         setTaskCompleted(true);
         setTimerActive(false);
-        loadProfile(); // Refresh points
+        
+        // Update profile with new points
+        if (profile) {
+          setProfile({
+            ...profile,
+            eco_points: newPoints,
+            level: Math.floor(newPoints / 50) + 1
+          });
+        }
       } catch (error) {
         console.log('Error completing task:', error);
         setTaskCompleted(true);
@@ -316,6 +328,13 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-slate-950 text-white overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0">
+        <div className="absolute inset-0 opacity-5">
+          <img 
+            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop" 
+            alt="Nature background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
         <motion.div
           animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
@@ -396,13 +415,13 @@ const Dashboard: React.FC = () => {
         </div>
       </motion.header>
 
-      <div className="relative z-10 max-w-6xl mx-auto p-6 space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
         {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-center mb-16"
         >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -419,8 +438,8 @@ const Dashboard: React.FC = () => {
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="text-4xl md:text-6xl font-bold mb-6"
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-5xl md:text-7xl font-bold mb-8 leading-tight"
           >
             <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
               Level {profile.level}
@@ -431,22 +450,38 @@ const Dashboard: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex justify-center items-center space-x-8 mb-8"
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="flex justify-center items-center space-x-12 mb-12"
           >
-            <div className="text-center">
-              <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="text-center p-6 rounded-2xl bg-slate-900/30 border border-emerald-500/20 backdrop-blur-sm"
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 1, type: "spring", stiffness: 200 }}
+                className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2"
+              >
                 {profile.eco_points}
-              </div>
-              <div className="text-slate-400">Eco Points</div>
-            </div>
-            <div className="w-px h-12 bg-slate-700" />
-            <div className="text-center">
-              <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+              </motion.div>
+              <div className="text-slate-300 font-medium">Eco Points</div>
+            </motion.div>
+            <div className="w-px h-16 bg-gradient-to-b from-transparent via-slate-600 to-transparent" />
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="text-center p-6 rounded-2xl bg-slate-900/30 border border-yellow-500/20 backdrop-blur-sm"
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
+                className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent mb-2"
+              >
                 {profile.level}
-              </div>
-              <div className="text-slate-400">Current Level</div>
-            </div>
+              </motion.div>
+              <div className="text-slate-300 font-medium">Current Level</div>
+            </motion.div>
           </motion.div>
         </motion.div>
 
@@ -462,6 +497,13 @@ const Dashboard: React.FC = () => {
                 : 'bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border-emerald-500/20'
             }`}
           >
+            <div className="absolute inset-0 opacity-10">
+              <img 
+                src="https://images.unsplash.com/photo-1569163139394-de4e4f43e4e3?w=800&h=400&fit=crop" 
+                alt="Environmental mission" 
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5" />
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
@@ -534,10 +576,10 @@ const Dashboard: React.FC = () => {
 
         {/* Main Tabs */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-          className="grid grid-cols-3 gap-6 mb-8"
+          transition={{ delay: 1.4, duration: 0.6 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12"
         >
           {[
             { id: 'learn', icon: BookOpen, title: 'Learn', color: 'blue' },
@@ -546,20 +588,29 @@ const Dashboard: React.FC = () => {
           ].map((tab) => (
             <motion.button
               key={tab.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.6 + (tab.id === 'learn' ? 0 : tab.id === 'act' ? 0.1 : 0.2) }}
+              whileHover={{ scale: 1.08, y: -8 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab(tab.id)}
-              className={`p-8 rounded-2xl border transition-all ${
+              className={`relative p-10 rounded-3xl border transition-all duration-300 overflow-hidden group ${
                 activeTab === tab.id
-                  ? `bg-gradient-to-br from-${tab.color}-500/20 to-${tab.color}-600/20 border-${tab.color}-500/50`
-                  : 'bg-slate-900/30 border-slate-800/50 hover:border-slate-700/50'
+                  ? `bg-gradient-to-br from-${tab.color}-500/20 to-${tab.color}-600/20 border-${tab.color}-500/50 shadow-2xl shadow-${tab.color}-500/25`
+                  : 'bg-slate-900/40 border-slate-800/50 hover:border-slate-700/50 hover:bg-slate-900/60'
               }`}
             >
-              <tab.icon className={`w-12 h-12 mx-auto mb-4 ${
-                activeTab === tab.id ? `text-${tab.color}-400` : 'text-slate-400'
-              }`} />
-              <h3 className={`text-xl font-bold ${
-                activeTab === tab.id ? `text-${tab.color}-400` : 'text-slate-300'
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              >
+                <tab.icon className={`w-16 h-16 mx-auto mb-6 transition-colors duration-300 ${
+                  activeTab === tab.id ? `text-${tab.color}-400` : 'text-slate-400 group-hover:text-slate-300'
+                }`} />
+              </motion.div>
+              <h3 className={`text-2xl font-bold transition-colors duration-300 ${
+                activeTab === tab.id ? `text-${tab.color}-400` : 'text-slate-300 group-hover:text-white'
               }`}>
                 {tab.title}
               </h3>
@@ -706,131 +757,222 @@ const Dashboard: React.FC = () => {
             
             {activeTab === 'learn' && (
               <div className="space-y-8">
-                {/* Learn Tab Header */}
+                {/* Level Selection */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center mb-8"
+                  className="text-center mb-8 relative"
                 >
-                  <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-teal-400 bg-clip-text text-transparent">
-                    Interactive Learning Hub
-                  </h2>
-                  <p className="text-slate-400 text-lg">Learn environmental science through immersive gameplay and interactive content</p>
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-emerald-500/5 to-teal-500/5 rounded-3xl" />
+                  <div className="absolute inset-0 opacity-10 rounded-3xl overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=400&fit=crop&crop=center" 
+                      alt="Forest background" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="relative z-10 py-8">
+                    <motion.div 
+                      className="text-6xl mb-4"
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      🌱
+                    </motion.div>
+                    <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                      Choose Your Learning Adventure
+                    </h2>
+                    <p className="text-slate-300 text-lg mb-8">Explore environmental topics and make a difference! 🌍</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-5 gap-4 max-w-4xl mx-auto">
+                    {[1, 2, 3, 4, 5].map((level) => {
+                      const levelNames = ['Beginner', 'Explorer', 'Innovator', 'Expert', 'Master'];
+                      const levelIcons = ['🌱', '🌿', '🌳', '🌍', '🌟'];
+                      const levelTopics = ['Stubble Burning', 'Water Crisis', 'Pollinators', 'Climate Change', 'Plastic Pollution'];
+                      const completedLevels = [1, 2]; // Mock completed levels
+                      const isCompleted = completedLevels.includes(level);
+                      
+                      return (
+                        <motion.div
+                          key={level}
+                          whileHover={{ 
+                            scale: 1.08, 
+                            y: -8,
+                            rotateY: 5,
+                            boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)"
+                          }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSelectedLevel(level)}
+                          className={`relative p-6 rounded-2xl border transition-all cursor-pointer group ${
+                            selectedLevel === level
+                              ? 'glass border-blue-500/70 bg-blue-500/20 shadow-lg shadow-blue-500/25'
+                              : 'glass border-blue-500/30 hover:border-blue-500/60'
+                          }`}
+                        >
+                          {isCompleted && (
+                            <motion.div 
+                              className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1"
+                              animate={{ scale: [1, 1.2, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            >
+                              <CheckCircle className="w-4 h-4 text-white" />
+                            </motion.div>
+                          )}
+                          
+                          <div className="text-center">
+                            <motion.div 
+                              className="text-4xl mb-2"
+                              whileHover={{ scale: 1.3, rotate: 360 }}
+                              transition={{ duration: 0.5 }}
+                            >
+                              {levelIcons[level - 1]}
+                            </motion.div>
+                            <div className="text-2xl font-bold mb-1 text-blue-400">
+                              {level}
+                            </div>
+                            <div className="text-xs font-medium text-slate-300 mb-1">
+                              {levelNames[level - 1]}
+                            </div>
+                            <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                              {levelTopics[level - 1]}
+                            </div>
+                            
+                            {selectedLevel === level && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="mt-3 px-3 py-1 bg-blue-500/20 rounded-full text-xs text-blue-300 font-medium"
+                              >
+                                Active ✨
+                              </motion.div>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </motion.div>
 
-                {/* Learning Progress Overview */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  {[
-                    { icon: '🎮', label: 'Game Areas', value: `${Math.min(Math.floor(profile.eco_points / 25), 5)}/5`, color: 'blue', desc: 'Unlocked with points' },
-                    { icon: '📚', label: 'Lessons', value: `${Math.floor(profile.eco_points / 15)}`, color: 'purple', desc: 'Based on progress' },
-                    { icon: '🏆', label: 'Current Level', value: `${profile.level}`, color: 'green', desc: 'Eco warrior rank' },
-                    { icon: '⏱️', label: 'Study Time', value: `${Math.floor(profile.eco_points / 5)}min`, color: 'orange', desc: 'Learning minutes' }
-                  ].map((stat, index) => (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-blue-500/50 transition-all group"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative z-10 text-center">
-                        <div className="text-3xl mb-3">{stat.icon}</div>
-                        <div className={`text-2xl font-bold text-${stat.color}-400 mb-2`}>{stat.value}</div>
-                        <div className="font-semibold text-white mb-1 text-sm">{stat.label}</div>
-                        <div className="text-xs text-slate-400">{stat.desc}</div>
+                {/* Interactive Progress Bar */}
+                {selectedLevel && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mb-8 glass rounded-2xl p-6 border border-emerald-500/30"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <motion.div 
+                          className="text-2xl"
+                          animate={{ bounce: [0, -10, 0] }}
+                          transition={{ duration: 1, repeat: Infinity }}
+                        >
+                          🏆
+                        </motion.div>
+                        <div>
+                          <h3 className="font-bold text-emerald-400">Learning Progress</h3>
+                          <p className="text-sm text-slate-400">Level {selectedLevel} Journey</p>
+                        </div>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-emerald-400">75%</div>
+                        <div className="text-xs text-slate-400">Complete</div>
+                      </div>
+                    </div>
+                    <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                      <motion.div 
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 h-3 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: "75%" }}
+                        transition={{ duration: 2, ease: "easeOut" }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-2 text-xs text-slate-400">
+                      <span>📚 Learn</span>
+                      <span>🧠 Quiz</span>
+                      <span>🎆 Complete</span>
+                    </div>
+                  </motion.div>
+                )}
 
-                {/* Learning Tabs */}
-                <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                  <div>
-                    <h3 className="text-xl font-bold mb-4 text-blue-400">Interactive Quiz</h3>
-                    <QuizComponent age={profile.age || 18} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-4 text-green-400">Learning Content</h3>
-                    <LearningContent age={profile.age || 18} />
-                  </div>
-                </div>
+                {/* Level Content */}
+                {selectedLevel === 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20, rotateX: -15 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="mb-8"
+                  >
+                    <Level1StubbleBurning />
+                  </motion.div>
+                )}
 
-                {/* Full-Screen Learning Content */}
+                {selectedLevel && selectedLevel > 1 && selectedLevel <= 5 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20, rotateX: -15 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="mb-8"
+                  >
+                    <EnvironmentalLevelLesson level={selectedLevel} />
+                  </motion.div>
+                )}
+
+                {/* Interactive Learning Tips */}
+                {selectedLevel && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="glass rounded-2xl p-6 border border-blue-500/30 mb-8 relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 opacity-5">
+                      <img 
+                        src="https://images.unsplash.com/photo-1497436072909-f5e4be1713d1?w=600&h=300&fit=crop" 
+                        alt="Learning background" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <motion.div 
+                          className="text-2xl"
+                          animate={{ rotate: [0, 15, -15, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          💡
+                        </motion.div>
+                        <h3 className="font-bold text-blue-400">Learning Tips</h3>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {[
+                          { icon: '📝', tip: 'Take notes while learning', color: 'text-yellow-400', img: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=100&h=60&fit=crop' },
+                          { icon: '🤔', tip: 'Think about real examples', color: 'text-green-400', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=100&h=60&fit=crop' },
+                          { icon: '💬', tip: 'Discuss with friends', color: 'text-blue-400', img: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=100&h=60&fit=crop' }
+                        ].map((item, index) => (
+                          <motion.div
+                            key={index}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            className="relative flex items-center space-x-2 p-3 bg-slate-800/30 rounded-xl hover:bg-slate-700/30 transition-all cursor-pointer overflow-hidden"
+                          >
+                            <div className="absolute inset-0 opacity-10">
+                              <img src={item.img} alt={item.tip} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="relative z-10 flex items-center space-x-2">
+                              <span className="text-xl">{item.icon}</span>
+                              <span className={`text-sm font-medium ${item.color}`}>{item.tip}</span>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Game Learning */}
                 <div className="w-full">
                   <RobloxLearning />
-                </div>
-
-                {/* Learning Progress & Achievements Grid */}
-                <div className="grid lg:grid-cols-2 gap-8 mt-8">
-                  {/* Enhanced Progress Tracking */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6"
-                  >
-                    <h3 className="text-2xl font-bold mb-6 text-blue-400 flex items-center">
-                      <BarChart3 className="w-7 h-7 mr-3" />
-                      Learning Progress
-                    </h3>
-                    <div className="space-y-6">
-                      <div>
-                        <div className="flex justify-between mb-3">
-                          <span className="text-lg font-semibold">Current Level</span>
-                          <span className="text-lg font-bold text-blue-400">Level {profile.level}</span>
-                        </div>
-                        <div className="w-full bg-slate-700 rounded-full h-3">
-                          <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500" style={{width: `${Math.min((profile.level / 10) * 100, 100)}%`}} />
-                        </div>
-                        <div className="text-sm text-slate-400 mt-2">Progress to Level {Math.min(profile.level + 1, 10)}</div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-3">
-                          <span className="text-lg font-semibold">Game Areas Unlocked</span>
-                          <span className="text-lg font-bold text-green-400">{Math.min(Math.floor(profile.eco_points / 25), 5)}/5</span>
-                        </div>
-                        <div className="w-full bg-slate-700 rounded-full h-3">
-                          <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500" style={{width: `${Math.min((Math.floor(profile.eco_points / 25) / 5) * 100, 100)}%`}} />
-                        </div>
-                        <div className="text-sm text-slate-400 mt-2">{25 - (profile.eco_points % 25)} points to next area</div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Enhanced Achievements */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 }}
-                    className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6"
-                  >
-                    <h3 className="text-2xl font-bold mb-6 text-green-400 flex items-center">
-                      <Award className="w-7 h-7 mr-3" />
-                      Learning Achievements
-                    </h3>
-                    <div className="space-y-4">
-                      {[
-                        { icon: '🌱', title: 'Eco Beginner', desc: 'Started environmental journey', unlocked: profile.eco_points >= 0 },
-                        { icon: '💧', title: 'Water Warrior', desc: 'Learned water conservation', unlocked: profile.eco_points >= 25 },
-                        { icon: '♻️', title: 'Recycling Pro', desc: 'Mastered waste management', unlocked: profile.eco_points >= 50 },
-                        { icon: '⚡', title: 'Energy Expert', desc: 'Understood renewable energy', unlocked: profile.eco_points >= 100 }
-                      ].map((badge) => (
-                        <div key={badge.title} className={`flex items-center p-4 rounded-xl transition-all ${
-                          badge.unlocked 
-                            ? 'bg-slate-800/50 border border-green-500/30' 
-                            : 'bg-slate-800/20 border border-slate-700/30 opacity-50'
-                        }`}>
-                          <div className={`text-3xl mr-4 ${badge.unlocked ? '' : 'grayscale'}`}>{badge.icon}</div>
-                          <div className="flex-grow">
-                            <div className={`font-semibold ${badge.unlocked ? 'text-white' : 'text-slate-500'}`}>{badge.title}</div>
-                            <div className={`text-sm ${badge.unlocked ? 'text-slate-300' : 'text-slate-600'}`}>{badge.desc}</div>
-                          </div>
-                          {badge.unlocked && <CheckCircle className="w-6 h-6 text-green-400" />}
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
                 </div>
               </div>
             )}
@@ -852,10 +994,10 @@ const Dashboard: React.FC = () => {
                 {/* Impact Stats Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   {[
-                    { icon: '💧', label: 'Water Saved', value: `${Math.floor(profile.eco_points * 1.2)}L`, color: 'blue', desc: 'Based on completed missions' },
-                    { icon: '🌱', label: 'CO₂ Offset', value: `${(profile.eco_points * 0.05).toFixed(1)}kg`, color: 'green', desc: 'Environmental impact' },
-                    { icon: '♻️', label: 'Items Recycled', value: `${Math.floor(profile.eco_points / 8)}`, color: 'yellow', desc: 'Waste diverted from landfill' },
-                    { icon: '⚡', label: 'Energy Saved', value: `${(profile.eco_points * 0.15).toFixed(1)}kWh`, color: 'purple', desc: 'Power conservation' }
+                    { icon: '💧', label: 'Water Saved', value: `${Math.floor(profile.eco_points * 1.2)}L`, color: 'blue', desc: 'Based on completed missions', img: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=200&h=120&fit=crop' },
+                    { icon: '🌱', label: 'CO₂ Offset', value: `${(profile.eco_points * 0.05).toFixed(1)}kg`, color: 'green', desc: 'Environmental impact', img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=120&fit=crop' },
+                    { icon: '♻️', label: 'Items Recycled', value: `${Math.floor(profile.eco_points / 8)}`, color: 'yellow', desc: 'Waste diverted from landfill', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=200&h=120&fit=crop' },
+                    { icon: '⚡', label: 'Energy Saved', value: `${(profile.eco_points * 0.15).toFixed(1)}kWh`, color: 'purple', desc: 'Power conservation', img: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=200&h=120&fit=crop' }
                   ].map((stat, index) => (
                     <motion.div
                       key={stat.label}
@@ -864,6 +1006,9 @@ const Dashboard: React.FC = () => {
                       transition={{ delay: index * 0.1 }}
                       className="relative overflow-hidden bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 hover:border-emerald-500/50 transition-all group"
                     >
+                      <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <img src={stat.img} alt={stat.label} className="w-full h-full object-cover" />
+                      </div>
                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                       <div className="relative z-10 text-center">
                         <div className="text-3xl mb-3">{stat.icon}</div>

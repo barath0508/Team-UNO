@@ -60,26 +60,79 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-6 relative overflow-hidden">
+      {/* Animated background elements - matching Hero */}
+      <div className="absolute inset-0">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+          className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [360, 180, 0],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"
+        />
+      </div>
+      
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2">
-            Join the Warriors
-          </h1>
-          <p className="text-slate-400">Create your account to start your journey</p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="mb-4"
+          >
+            <span className="inline-flex items-center px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm font-medium backdrop-blur-sm">
+              🌱 Join the Environmental Revolution
+            </span>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-5xl md:text-6xl font-bold mb-4 leading-tight"
+          >
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
+              Join the
+            </span>{' '}
+            <span className="text-white">Warriors</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-slate-300 text-lg"
+          >
+            Create your account to start your environmental journey
+          </motion.p>
         </div>
 
         <motion.form
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
           onSubmit={handleSignup}
-          className="space-y-6"
+          className="space-y-6 glass rounded-2xl p-8 border border-emerald-500/20"
         >
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm">

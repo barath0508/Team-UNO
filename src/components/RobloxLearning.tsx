@@ -38,97 +38,216 @@ const RobloxLearning: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <Gamepad2 className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-        <h2 className="text-3xl font-bold text-blue-400 mb-4">Eco Learning Game</h2>
-        <p className="text-slate-400 mb-6">Learn environmental science through interactive Roblox gameplay</p>
-        
-        <div className="bg-slate-800/50 rounded-lg p-6 mb-8">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-400">{gameData?.ecoPoints || 0}</div>
-              <div className="text-sm text-slate-400">Eco Points</div>
+    <div className="space-y-12">
+      <div className="text-center relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-green-500/10 rounded-3xl blur-2xl" />
+        <div className="relative glass rounded-3xl p-12 border border-blue-500/30">
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 bg-clip-text text-transparent"
+          >
+            🎮 Eco Learning Universe
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-slate-300 mb-8 text-xl"
+          >
+            Embark on an epic environmental adventure through immersive gameplay
+          </motion.p>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-2xl blur-xl" />
+            <div className="relative glass rounded-2xl p-8 border border-emerald-500/30">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="group"
+                >
+                  <div className="text-4xl font-bold text-blue-400 mb-2 group-hover:text-blue-300 transition-colors">
+                    {gameData?.ecoPoints || 0}
+                  </div>
+                  <div className="text-slate-400 font-medium group-hover:text-slate-300 transition-colors">
+                    🎆 Eco Points
+                  </div>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="group"
+                >
+                  <div className="text-4xl font-bold text-green-400 mb-2 group-hover:text-green-300 transition-colors">
+                    {gameData?.gameData.unlockedAreas || 0}
+                  </div>
+                  <div className="text-slate-400 font-medium group-hover:text-slate-300 transition-colors">
+                    🏝️ Areas Unlocked
+                  </div>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="group"
+                >
+                  <div className="text-4xl font-bold text-purple-400 mb-2 group-hover:text-purple-300 transition-colors">
+                    {gameData?.gameData.playerRank || 'Beginner'}
+                  </div>
+                  <div className="text-slate-400 font-medium group-hover:text-slate-300 transition-colors">
+                    🏆 Current Rank
+                  </div>
+                </motion.div>
+              </div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-green-400">{gameData?.gameData.unlockedAreas || 0}</div>
-              <div className="text-sm text-slate-400">Areas Unlocked</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-purple-400">{gameData?.gameData.playerRank || 'Beginner'}</div>
-              <div className="text-sm text-slate-400">Rank</div>
-            </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {gameAreas.map((area, index) => {
           const isUnlocked = (gameData?.ecoPoints || 0) >= area.requiredPoints;
+          const areaIcons = ['☀️', '🌪️', '♻️', '🌳', '🌊'];
+          const gradients = [
+            'from-yellow-500/20 to-orange-500/20',
+            'from-cyan-500/20 to-blue-500/20', 
+            'from-green-500/20 to-emerald-500/20',
+            'from-emerald-500/20 to-teal-500/20',
+            'from-blue-500/20 to-purple-500/20'
+          ];
+          
           return (
             <motion.div
               key={area.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`p-6 rounded-2xl border transition-all ${
-                isUnlocked
-                  ? 'bg-slate-800/50 border-blue-500/30 hover:border-blue-500/50'
-                  : 'bg-slate-900/30 border-slate-700/50'
-              }`}
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: index * 0.15, type: "spring", stiffness: 100 }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="relative group"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className={`text-xl font-bold ${isUnlocked ? 'text-blue-400' : 'text-slate-500'}`}>
-                  {area.name}
-                </h3>
-                {isUnlocked ? (
-                  <Unlock className="w-6 h-6 text-green-400" />
-                ) : (
-                  <Lock className="w-6 h-6 text-slate-500" />
-                )}
-              </div>
-              
-              <p className={`mb-4 ${isUnlocked ? 'text-slate-300' : 'text-slate-500'}`}>
-                {area.description}
-              </p>
-              
-              {!isUnlocked && (
-                <div className="text-sm text-slate-400 mb-4">
-                  Requires {area.requiredPoints} eco points to unlock
+              <div className={`absolute inset-0 bg-gradient-to-br ${gradients[index]} rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+              <div className={`relative overflow-hidden rounded-3xl border transition-all duration-500 ${
+                isUnlocked
+                  ? 'glass border-blue-500/30 group-hover:border-blue-500/50 shadow-2xl shadow-blue-500/10'
+                  : 'bg-slate-900/30 border-slate-700/50 opacity-60'
+              }`}>
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <motion.div
+                        animate={isUnlocked ? { 
+                          rotate: [0, 10, -10, 0],
+                          scale: [1, 1.1, 1]
+                        } : {}}
+                        transition={{ duration: 3, repeat: Infinity }}
+                        className={`text-4xl mr-4 p-3 rounded-2xl ${
+                          isUnlocked ? 'bg-blue-500/20' : 'bg-slate-800/30'
+                        }`}
+                      >
+                        {areaIcons[index]}
+                      </motion.div>
+                      <h3 className={`text-2xl font-bold ${
+                        isUnlocked ? 'text-white group-hover:text-blue-300' : 'text-slate-500'
+                      } transition-colors`}>
+                        {area.name}
+                      </h3>
+                    </div>
+                    <motion.div
+                      animate={isUnlocked ? { scale: [1, 1.2, 1] } : {}}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      {isUnlocked ? (
+                        <Unlock className="w-8 h-8 text-green-400" />
+                      ) : (
+                        <Lock className="w-8 h-8 text-slate-500" />
+                      )}
+                    </motion.div>
+                  </div>
+                  
+                  <p className={`mb-6 text-lg leading-relaxed ${
+                    isUnlocked ? 'text-slate-200 group-hover:text-white' : 'text-slate-500'
+                  } transition-colors`}>
+                    {area.description}
+                  </p>
+                  
+                  {!isUnlocked && (
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="glass rounded-xl p-4 mb-6 border border-orange-500/30"
+                    >
+                      <div className="text-orange-400 font-semibold text-center">
+                        🔒 Requires {area.requiredPoints} eco points to unlock
+                      </div>
+                    </motion.div>
+                  )}
+                  
+                  <motion.button
+                    whileHover={isUnlocked ? { scale: 1.05, y: -2 } : {}}
+                    whileTap={isUnlocked ? { scale: 0.95 } : {}}
+                    disabled={!isUnlocked}
+                    className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
+                      isUnlocked
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40'
+                        : 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {isUnlocked ? '🎮 Enter World' : '🔒 Locked'}
+                  </motion.button>
                 </div>
-              )}
-              
-              <motion.button
-                whileHover={isUnlocked ? { scale: 1.05 } : {}}
-                whileTap={isUnlocked ? { scale: 0.95 } : {}}
-                disabled={!isUnlocked}
-                className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                  isUnlocked
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600'
-                    : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                }`}
-              >
-                {isUnlocked ? 'Play Area' : 'Locked'}
-              </motion.button>
+              </div>
             </motion.div>
           );
         })}
       </div>
 
-      <div className="text-center">
-        <motion.a
-          href="https://www.roblox.com/games/your-game-id"
-          target="_blank"
-          rel="noopener noreferrer"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold rounded-full hover:from-green-600 hover:to-blue-600 transition-all shadow-lg"
-        >
-          <Gamepad2 className="w-6 h-6 mr-3" />
-          Launch Roblox Game
-          <ExternalLink className="w-5 h-5 ml-2" />
-        </motion.a>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1 }}
+        className="text-center relative"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-blue-500/20 to-purple-500/20 rounded-3xl blur-2xl" />
+        <div className="relative glass rounded-3xl p-12 border border-green-500/30">
+          <motion.h3
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"
+          >
+            🚀 Ready for Adventure?
+          </motion.h3>
+          <motion.a
+            href="https://www.roblox.com/games/your-game-id"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.08, y: -5 }}
+            whileTap={{ scale: 0.95 }}
+            className="group relative inline-flex items-center px-12 py-6 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white font-bold rounded-3xl overflow-hidden shadow-2xl shadow-green-500/25 hover:shadow-green-500/40 transition-all"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="relative z-10 mr-4"
+            >
+              <Gamepad2 className="w-8 h-8" />
+            </motion.div>
+            <span className="relative z-10 text-2xl mr-4">
+              Launch Eco Universe
+            </span>
+            <motion.div
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="relative z-10"
+            >
+              <ExternalLink className="w-6 h-6" />
+            </motion.div>
+          </motion.a>
+        </div>
+      </motion.div>
     </div>
   );
 };

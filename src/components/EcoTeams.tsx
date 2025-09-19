@@ -66,13 +66,37 @@ const EcoTeams: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">Eco Teams</h1>
+    <div className="min-h-screen bg-slate-950 text-white p-6 relative overflow-hidden">
+      {/* Animated background elements - matching Hero */}
+      <div className="absolute inset-0">
+        <div
+          className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse"
+        />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
+      </div>
+      
+      <div className="max-w-4xl mx-auto relative z-10">
+        <div className="text-center mb-12">
+          <div className="mb-4">
+            <span className="inline-flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-medium backdrop-blur-sm">
+              👥 Collaboration & Community
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-teal-400 bg-clip-text text-transparent">
+              Eco
+            </span>{' '}
+            <span className="text-white">Teams</span>
+          </h1>
+          <p className="text-slate-300 text-lg">Join forces with fellow eco-warriors to amplify your impact</p>
+        </div>
 
         {/* User's Team */}
         {userTeam && (
-          <div className="bg-slate-900 rounded-lg p-6 mb-8 border-2 border-green-500">
+          <div className="glass rounded-2xl p-8 mb-8 border-2 border-green-500/50">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <Crown className="w-5 h-5 mr-2 text-yellow-400" />
               Your Team: {userTeam.name}
@@ -83,7 +107,7 @@ const EcoTeams: React.FC = () => {
 
         {/* Create Team */}
         {!userTeam && (
-          <div className="bg-slate-900 rounded-lg p-6 mb-8">
+          <div className="glass rounded-2xl p-8 mb-8 border border-emerald-500/20">
             {!showCreateForm ? (
               <button 
                 onClick={() => setShowCreateForm(true)}
@@ -121,7 +145,7 @@ const EcoTeams: React.FC = () => {
         )}
 
         {/* All Teams */}
-        <div className="bg-slate-900 rounded-lg p-6">
+        <div className="glass rounded-2xl p-8 border border-blue-500/20">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Users className="w-5 h-5 mr-2 text-blue-400" />
             All Teams

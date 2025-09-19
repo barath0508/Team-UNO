@@ -60,12 +60,36 @@ const RewardsHub: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">Rewards Hub</h1>
+    <div className="min-h-screen bg-slate-950 text-white p-6 relative overflow-hidden">
+      {/* Animated background elements - matching Hero */}
+      <div className="absolute inset-0">
+        <div
+          className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse"
+        />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
+      </div>
+      
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="text-center mb-12">
+          <div className="mb-4">
+            <span className="inline-flex items-center px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-400 text-sm font-medium backdrop-blur-sm">
+              🏆 Achievements & Rewards
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+            <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+              Rewards
+            </span>{' '}
+            <span className="text-white">Hub</span>
+          </h1>
+          <p className="text-slate-300 text-lg">Celebrate your environmental achievements and unlock rewards</p>
+        </div>
 
         {/* Points & Certificate */}
-        <div className="bg-slate-900 rounded-lg p-6 mb-8">
+        <div className="glass rounded-2xl p-8 mb-8 border border-yellow-500/20">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-green-400">{userPoints} Points</h2>
@@ -82,7 +106,7 @@ const RewardsHub: React.FC = () => {
         </div>
 
         {/* Badges */}
-        <div className="bg-slate-900 rounded-lg p-6 mb-8">
+        <div className="glass rounded-2xl p-8 mb-8 border border-emerald-500/20">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Award className="w-5 h-5 mr-2 text-yellow-400" />
             Your Badges ({badges.length})
@@ -99,7 +123,7 @@ const RewardsHub: React.FC = () => {
         </div>
 
         {/* Active Challenges */}
-        <div className="bg-slate-900 rounded-lg p-6">
+        <div className="glass rounded-2xl p-8 border border-blue-500/20">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Trophy className="w-5 h-5 mr-2 text-blue-400" />
             Active Challenges

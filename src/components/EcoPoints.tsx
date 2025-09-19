@@ -46,12 +46,36 @@ const EcoPoints: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">Eco Points System</h1>
+    <div className="min-h-screen bg-slate-950 text-white p-6 relative overflow-hidden">
+      {/* Animated background elements - matching Hero */}
+      <div className="absolute inset-0">
+        <div
+          className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse"
+        />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
+      </div>
+      
+      <div className="max-w-4xl mx-auto relative z-10">
+        <div className="text-center mb-12">
+          <div className="mb-4">
+            <span className="inline-flex items-center px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm font-medium backdrop-blur-sm">
+              🏆 Points & Achievements
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
+              Eco Points
+            </span>{' '}
+            <span className="text-white">System</span>
+          </h1>
+          <p className="text-slate-300 text-lg">Track your environmental impact and compete with others</p>
+        </div>
         
         {/* User Points */}
-        <div className="bg-slate-900 rounded-lg p-6 mb-8">
+        <div className="glass rounded-2xl p-8 mb-8 border border-emerald-500/20">
           <h2 className="text-xl font-semibold mb-4">Your Points</h2>
           <div className="text-3xl font-bold text-green-400">{userPoints}</div>
           
@@ -75,7 +99,7 @@ const EcoPoints: React.FC = () => {
         </div>
 
         {/* Leaderboard */}
-        <div className="bg-slate-900 rounded-lg p-6">
+        <div className="glass rounded-2xl p-8 border border-blue-500/20">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Trophy className="w-5 h-5 mr-2 text-yellow-400" />
             Leaderboard
