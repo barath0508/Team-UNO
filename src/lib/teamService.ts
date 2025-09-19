@@ -12,28 +12,49 @@ export interface TeamMessage {
 }
 
 export const createTeam = async (name: string, userId: string) => {
-  const { data, error } = await supabase
-    .from('eco_teams')
-    .insert({ name, created_by: userId })
-    .select()
-    .single();
-  
-  if (error) throw error;
-  
-  // Add creator as member
-  await supabase
-    .from('team_members')
-    .insert({ team_id: data.id, user_id: userId });
-  
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('eco_teams')
+      .insert({ name, created_by: userId })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Team creation error:', error);
+      throw error;
+    }
+    
+    // Add creator as member
+    const { error: memberError } = await supabase
+      .from('team_members')
+      .insert({ team_id: data.id, user_id: userId });
+    
+    if (memberError) {
+      console.error('Member addition error:', memberError);
+      throw memberError;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Create team service error:', error);
+    throw error;
+  }
 };
 
 export const joinTeam = async (teamId: string, userId: string) => {
-  const { error } = await supabase
-    .from('team_members')
-    .insert({ team_id: teamId, user_id: userId });
-  
-  if (error) throw error;
+  try {
+    const { error } = await supabase
+      .from('team_members')
+      .insert({ team_id: teamId, user_id: userId });
+    
+    if (error) {
+      console.error('Join team error:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Join team service error:', error);
+    throw error;
+  }
 };
 
 export const getUserTeam = async (userId: string) => {

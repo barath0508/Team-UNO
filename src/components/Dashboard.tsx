@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { getTodayTask } from '../lib/dailyTasks';
 import { addPoints } from '../lib/ecoPointsSystem';
 import FirstTimeSetup from './FirstTimeSetup';
-import { getCurrentLocation, generateLocationTasks } from '../lib/locationTasks';
+import { getCurrentLocation, generateLocalityTasks } from '../lib/locationService';
 import RobloxLearning from './RobloxLearning';
 import Level1StubbleBurning from './Level1StubbleBurning';
 import EnvironmentalLevelLesson from './EnvironmentalLevelLesson';
@@ -77,8 +77,16 @@ const Dashboard: React.FC = () => {
           }
         }
         
-        const tasks = await generateLocationTasks('General', age);
-        setLocationTasks(tasks.map((task, index) => ({ ...task, id: index + 1 })));
+        // Get user's current location
+        try {
+          const location = await getCurrentLocation();
+          const tasks = await generateLocalityTasks(location, age);
+          setLocationTasks(tasks.map((task, index) => ({ ...task, id: index + 1 })));
+        } catch (locationError) {
+          console.log('Location access denied, using general tasks');
+          const tasks = await generateLocalityTasks({ latitude: 0, longitude: 0 }, age);
+          setLocationTasks(tasks.map((task, index) => ({ ...task, id: index + 1 })));
+        }
       }
     } catch (error) {
       setLocationTasks(getOfflineTasks());

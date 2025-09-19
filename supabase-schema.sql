@@ -11,6 +11,9 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 DROP FUNCTION IF EXISTS update_age_from_dob();
 DROP FUNCTION IF EXISTS update_level_from_points();
 
+DROP TABLE IF EXISTS team_messages CASCADE;
+DROP TABLE IF EXISTS team_members CASCADE;
+DROP TABLE IF EXISTS eco_teams CASCADE;
 DROP TABLE IF EXISTS location_tasks CASCADE;
 DROP TABLE IF EXISTS daily_tasks CASCADE;
 DROP TABLE IF EXISTS mission_submissions CASCADE;

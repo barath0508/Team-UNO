@@ -96,9 +96,13 @@ const EcoTeams: React.FC = () => {
         setShowCreateForm(false);
         setTeamName('');
         loadTeams();
-      } catch (error) {
+        alert('Team created successfully!');
+      } catch (error: any) {
         console.error('Error creating team:', error);
+        alert(`Failed to create team: ${error.message || 'Unknown error'}`);
       }
+    } else {
+      alert('Please enter a team name');
     }
   };
 

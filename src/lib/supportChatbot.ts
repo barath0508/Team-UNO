@@ -1,10 +1,16 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getApiKeyForTask, markKeyAsRateLimited } from './apiKeyManager';
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBJmXRtJvn8xjGxV0XUZ8z9QY7mK5nL3pQ');
+const createGenAI = () => new GoogleGenerativeAI(getApiKeyForTask('support'));
 
 export const generateSupportResponse = async (userMessage: string, conversationHistory: any[] = []) => {
-  try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  let attempts = 0;
+  const maxAttempts = 4;
+  
+  while (attempts < maxAttempts) {
+    try {
+      const genAI = createGenAI();
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
     const context = `You are EcoBot, a helpful AI assistant for Green Spark, an environmental education platform. 
     You help students with:
@@ -24,11 +30,20 @@ export const generateSupportResponse = async (userMessage: string, conversationH
     
     const prompt = `${context}\n\nConversation history:\n${conversationContext}\n\nUser: ${userMessage}\n\nEcoBot:`;
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('Support chatbot error:', error);
-    return "I'm having trouble connecting right now. Please try again or contact our support team directly for assistance!";
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } catch (error: any) {
+      attempts++;
+      if (error.status === 429) {
+        markKeyAsRateLimited(getApiKeyForTask('support'));
+        if (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+          continue;
+        }
+      }
+      console.error('Support chatbot error:', error);
+      return "I'm having trouble connecting right now. Please try again or contact our support team directly for assistance!";
+    }
   }
 };
