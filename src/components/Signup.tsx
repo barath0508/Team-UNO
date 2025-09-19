@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, Lock, ArrowRight } from 'lucide-react';
+import { User, Mail, Phone, Lock, ArrowRight, Gamepad2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
@@ -10,6 +10,7 @@ const Signup: React.FC = () => {
     email: '',
     mobile: '',
     dateOfBirth: '',
+    robloxId: '',
     password: '',
     confirmPassword: ''
   });
@@ -40,7 +41,8 @@ const Signup: React.FC = () => {
           data: {
             full_name: formData.fullName,
             mobile: formData.mobile,
-            date_of_birth: formData.dateOfBirth
+            date_of_birth: formData.dateOfBirth,
+            roblox_id: formData.robloxId
           }
         }
       });
@@ -202,6 +204,26 @@ const Signup: React.FC = () => {
               required
               className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:border-emerald-500 focus:outline-none transition-colors"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Roblox Username (Optional)
+            </label>
+            <div className="relative">
+              <Gamepad2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                name="robloxId"
+                value={formData.robloxId}
+                onChange={handleChange}
+                className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:border-emerald-500 focus:outline-none transition-colors"
+                placeholder="Enter your Roblox username"
+              />
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Connect your Roblox account to unlock exclusive game features
+            </p>
           </div>
 
           <div>

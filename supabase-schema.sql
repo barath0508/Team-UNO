@@ -27,6 +27,7 @@ CREATE TABLE profiles (
   full_name TEXT NOT NULL DEFAULT '',
   mobile TEXT,
   date_of_birth DATE,
+  roblox_id TEXT,
   age INTEGER DEFAULT 18 CHECK (age >= 0 AND age <= 150),
   location TEXT DEFAULT '',
   state TEXT DEFAULT '',
@@ -81,6 +82,32 @@ CREATE TABLE location_tasks (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Eco teams
+CREATE TABLE eco_teams (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_by UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Team members
+CREATE TABLE team_members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  team_id UUID REFERENCES eco_teams(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(team_id, user_id)
+);
+
+-- Team messages
+CREATE TABLE team_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  team_id UUID REFERENCES eco_teams(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ============================================
 -- ENABLE ROW LEVEL SECURITY
 -- ============================================
@@ -90,6 +117,9 @@ ALTER TABLE eco_points_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mission_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE location_tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE eco_teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_messages ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- CREATE RLS POLICIES
@@ -117,6 +147,35 @@ CREATE POLICY "Users can update own daily tasks" ON daily_tasks FOR UPDATE USING
 CREATE POLICY "Everyone can view location tasks" ON location_tasks FOR SELECT TO authenticated;
 CREATE POLICY "Users can insert location tasks" ON location_tasks FOR INSERT TO authenticated;
 
+-- Eco teams policies
+CREATE POLICY "Users can view all teams" ON eco_teams FOR SELECT TO authenticated;
+CREATE POLICY "Users can create teams" ON eco_teams FOR INSERT WITH CHECK (auth.uid() = created_by);
+
+-- Team members policies
+CREATE POLICY "Users can view team members" ON team_members FOR SELECT TO authenticated;
+CREATE POLICY "Users can join teams" ON team_members FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can leave teams" ON team_members FOR DELETE USING (auth.uid() = user_id);
+
+-- Team messages policies
+CREATE POLICY "Team members can view messages" ON team_messages
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM team_members 
+      WHERE team_members.team_id = team_messages.team_id 
+      AND team_members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Team members can send messages" ON team_messages
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id AND
+    EXISTS (
+      SELECT 1 FROM team_members 
+      WHERE team_members.team_id = team_messages.team_id 
+      AND team_members.user_id = auth.uid()
+    )
+  );
+
 -- ============================================
 -- CREATE FUNCTIONS
 -- ============================================
@@ -125,12 +184,13 @@ CREATE POLICY "Users can insert location tasks" ON location_tasks FOR INSERT TO 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, mobile, date_of_birth)
+  INSERT INTO public.profiles (id, full_name, mobile, date_of_birth, roblox_id)
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'mobile',
-    (NEW.raw_user_meta_data->>'date_of_birth')::DATE
+    (NEW.raw_user_meta_data->>'date_of_birth')::DATE,
+    NEW.raw_user_meta_data->>'roblox_id'
   );
   RETURN NEW;
 END;

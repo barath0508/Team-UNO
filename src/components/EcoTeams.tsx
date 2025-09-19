@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { verifyMissionWithAI } from '../lib/aiVerification';
 import { addPoints } from '../lib/ecoPointsSystem';
+import { createTeam, joinTeam, getUserTeam, getTeamMessages, sendTeamMessage, subscribeToTeamMessages, TeamMessage } from '../lib/teamService';
 
 const EcoTeams: React.FC = () => {
   const navigate = useNavigate();
@@ -22,11 +23,8 @@ const EcoTeams: React.FC = () => {
   const [showTeamChat, setShowTeamChat] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [theme, setTheme] = useState('dark');
-  const [chatMessages, setChatMessages] = useState([
-    { id: 1, user: 'Alex', message: 'Great job on the cleanup drive!', time: '2 min ago' },
-    { id: 2, user: 'Maya', message: 'When should we start the garden project?', time: '5 min ago' },
-    { id: 3, user: 'Sam', message: 'I found a perfect spot for planting!', time: '10 min ago' }
-  ]);
+  const [chatMessages, setChatMessages] = useState<TeamMessage[]>([]);
+  const [subscription, setSubscription] = useState<any>(null);
   
   const teamTasks = [
     {
@@ -59,56 +57,60 @@ const EcoTeams: React.FC = () => {
     loadTeams();
   }, []);
 
+  useEffect(() => {
+    if (userTeam) {
+      loadChatMessages();
+      setupRealtimeSubscription();
+    }
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [userTeam]);
+
   const loadTeams = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      // Get user's team
-      const { data: memberData } = await supabase
-        .from('team_members')
-        .select('eco_teams(*)')
-        .eq('user_id', user.id)
-        .single();
+      try {
+        const team = await getUserTeam(user.id);
+        setUserTeam(team);
 
-      if (memberData) setUserTeam(memberData.eco_teams);
+        const { data: teamsData } = await supabase
+          .from('eco_teams')
+          .select('*, team_members(count)')
+          .order('created_at', { ascending: false });
 
-      // Get all teams
-      const { data: teamsData } = await supabase
-        .from('eco_teams')
-        .select('*, team_members(count)')
-        .order('created_at', { ascending: false });
-
-      setTeams(teamsData || []);
-    }
-  };
-
-  const createTeam = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && teamName.trim()) {
-      const { data: team } = await supabase
-        .from('eco_teams')
-        .insert({ name: teamName, created_by: user.id })
-        .select()
-        .single();
-
-      if (team) {
-        await supabase
-          .from('team_members')
-          .insert({ team_id: team.id, user_id: user.id });
-        
-        setShowCreateForm(false);
-        setTeamName('');
-        loadTeams();
+        setTeams(teamsData || []);
+      } catch (error) {
+        console.error('Error loading teams:', error);
       }
     }
   };
 
-  const joinTeam = async (teamId: string) => {
+  const handleCreateTeam = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && teamName.trim()) {
+      try {
+        await createTeam(teamName, user.id);
+        setShowCreateForm(false);
+        setTeamName('');
+        loadTeams();
+      } catch (error) {
+        console.error('Error creating team:', error);
+      }
+    }
+  };
+
+  const handleJoinTeam = async (teamId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase
-        .from('team_members')
-        .insert({ team_id: teamId, user_id: user.id });
-      loadTeams();
+      try {
+        await joinTeam(teamId, user.id);
+        loadTeams();
+      } catch (error) {
+        console.error('Error joining team:', error);
+      }
     }
   };
   
@@ -159,15 +161,37 @@ const EcoTeams: React.FC = () => {
     navigate('/');
   };
   
-  const sendChatMessage = () => {
-    if (chatMessage.trim()) {
-      setChatMessages([...chatMessages, {
-        id: Date.now(),
-        user: 'You',
-        message: chatMessage,
-        time: 'now'
-      }]);
-      setChatMessage('');
+  const loadChatMessages = async () => {
+    if (userTeam) {
+      try {
+        const messages = await getTeamMessages(userTeam.id);
+        setChatMessages(messages);
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      }
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    if (userTeam) {
+      const sub = subscribeToTeamMessages(userTeam.id, (newMessage) => {
+        setChatMessages(prev => [...prev, newMessage]);
+      });
+      setSubscription(sub);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (chatMessage.trim() && userTeam) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        try {
+          await sendTeamMessage(userTeam.id, user.id, chatMessage);
+          setChatMessage('');
+        } catch (error) {
+          console.error('Error sending message:', error);
+        }
+      }
     }
   };
 
@@ -338,8 +362,12 @@ const EcoTeams: React.FC = () => {
             {chatMessages.map((msg) => (
               <div key={msg.id} className="bg-slate-800/50 rounded-lg p-2">
                 <div className="flex justify-between items-start">
-                  <span className="text-sm font-medium text-blue-400">{msg.user}</span>
-                  <span className="text-xs text-slate-500">{msg.time}</span>
+                  <span className="text-sm font-medium text-blue-400">
+                    {msg.profiles?.full_name || 'Unknown User'}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {new Date(msg.created_at).toLocaleTimeString()}
+                  </span>
                 </div>
                 <div className="text-sm text-slate-300 mt-1">{msg.message}</div>
               </div>
@@ -352,12 +380,12 @@ const EcoTeams: React.FC = () => {
                 type="text"
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="Type a message..."
                 className="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
               />
               <button
-                onClick={sendChatMessage}
+                onClick={handleSendMessage}
                 className="p-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <Send className="w-4 h-4" />
@@ -491,7 +519,7 @@ const EcoTeams: React.FC = () => {
                   />
                   <div className="space-x-2">
                     <button 
-                      onClick={createTeam}
+                      onClick={handleCreateTeam}
                       className="bg-green-600 px-4 py-2 rounded hover:bg-green-700"
                     >
                       Create
@@ -523,7 +551,7 @@ const EcoTeams: React.FC = () => {
                   </p>
                   {!userTeam && (
                     <button 
-                      onClick={() => joinTeam(team.id)}
+                      onClick={() => handleJoinTeam(team.id)}
                       className="bg-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-700"
                     >
                       Join Team

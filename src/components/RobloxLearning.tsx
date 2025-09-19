@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Gamepad2, ExternalLink, Trophy, Lock, Unlock } from 'lucide-react';
+import { Gamepad2, ExternalLink, Trophy, Lock, Unlock, BookOpen, Play, Award, Users, Clock, Star } from 'lucide-react';
 import { generateRobloxGameData } from '../lib/robloxIntegration';
 import { supabase } from '../lib/supabase';
 
@@ -22,11 +22,51 @@ const RobloxLearning: React.FC = () => {
   };
 
   const gameAreas = [
-    { name: 'Eco World', requiredPoints: 0, description: 'Learn about solar energy' },
-    { name: 'Wind Valley', requiredPoints: 25, description: 'Explore wind power generation' },
-    { name: 'Recycling Hub', requiredPoints: 50, description: 'Master waste management' },
-    { name: 'Green Forest', requiredPoints: 100, description: 'Discover biodiversity' },
-    { name: 'Ocean Cleanup', requiredPoints: 200, description: 'Save marine life' }
+    {
+      name: 'Solar City',
+      requiredPoints: 25,
+      description: 'Learn about renewable energy and build sustainable cities powered by the sun.',
+      lessons: 8,
+      duration: '45 min',
+      difficulty: 'Beginner',
+      skills: ['Solar Energy', 'Urban Planning', 'Energy Efficiency']
+    },
+    {
+      name: 'Climate Lab',
+      requiredPoints: 50,
+      description: 'Experiment with weather patterns and understand climate change impacts.',
+      lessons: 12,
+      duration: '60 min',
+      difficulty: 'Intermediate',
+      skills: ['Climate Science', 'Data Analysis', 'Weather Systems']
+    },
+    {
+      name: 'Recycling Factory',
+      requiredPoints: 75,
+      description: 'Master the art of waste management and circular economy principles.',
+      lessons: 10,
+      duration: '50 min',
+      difficulty: 'Intermediate',
+      skills: ['Waste Management', 'Circular Economy', 'Material Science']
+    },
+    {
+      name: 'Forest Sanctuary',
+      requiredPoints: 100,
+      description: 'Protect biodiversity and learn about ecosystem conservation.',
+      lessons: 15,
+      duration: '75 min',
+      difficulty: 'Advanced',
+      skills: ['Biodiversity', 'Ecosystem Management', 'Conservation']
+    },
+    {
+      name: 'Ocean Explorer',
+      requiredPoints: 125,
+      description: 'Dive deep into marine conservation and ocean protection strategies.',
+      lessons: 18,
+      duration: '90 min',
+      difficulty: 'Advanced',
+      skills: ['Marine Biology', 'Ocean Conservation', 'Pollution Control']
+    }
   ];
 
   if (loading) {
@@ -174,11 +214,45 @@ const RobloxLearning: React.FC = () => {
                     </motion.div>
                   </div>
                   
-                  <p className={`mb-6 text-lg leading-relaxed ${
+                  <p className={`mb-4 text-lg leading-relaxed ${
                     isUnlocked ? 'text-slate-200 group-hover:text-white' : 'text-slate-500'
                   } transition-colors`}>
                     {area.description}
                   </p>
+                  
+                  {isUnlocked && (
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                      <div className="flex items-center text-sm text-slate-300">
+                        <BookOpen className="w-4 h-4 mr-2 text-blue-400" />
+                        {area.lessons} Lessons
+                      </div>
+                      <div className="flex items-center text-sm text-slate-300">
+                        <Clock className="w-4 h-4 mr-2 text-green-400" />
+                        {area.duration}
+                      </div>
+                      <div className="flex items-center text-sm text-slate-300">
+                        <Star className="w-4 h-4 mr-2 text-yellow-400" />
+                        {area.difficulty}
+                      </div>
+                      <div className="flex items-center text-sm text-slate-300">
+                        <Award className="w-4 h-4 mr-2 text-purple-400" />
+                        Skills+
+                      </div>
+                    </div>
+                  )}
+                  
+                  {isUnlocked && (
+                    <div className="mb-4">
+                      <div className="text-xs text-slate-400 mb-2">Skills you'll learn:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {area.skills.map((skill, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   {!isUnlocked && (
                     <motion.div 
@@ -208,18 +282,27 @@ const RobloxLearning: React.FC = () => {
   🎮 Enter World
 </motion.a>
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         <motion.button
                           whileHover={{ scale: 1.02 }}
-                          className="py-2 px-3 bg-slate-800/50 text-slate-300 rounded-lg text-sm hover:bg-slate-700/50 transition-colors"
+                          className="py-2 px-2 bg-slate-800/50 text-slate-300 rounded-lg text-xs hover:bg-slate-700/50 transition-colors flex items-center justify-center"
                         >
-                          🎲 Mini-Game
+                          <Play className="w-3 h-3 mr-1" />
+                          Demo
                         </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.02 }}
-                          className="py-2 px-3 bg-slate-800/50 text-slate-300 rounded-lg text-sm hover:bg-slate-700/50 transition-colors"
+                          className="py-2 px-2 bg-slate-800/50 text-slate-300 rounded-lg text-xs hover:bg-slate-700/50 transition-colors flex items-center justify-center"
                         >
-                          🔍 AR View
+                          <Users className="w-3 h-3 mr-1" />
+                          Team
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          className="py-2 px-2 bg-slate-800/50 text-slate-300 rounded-lg text-xs hover:bg-slate-700/50 transition-colors flex items-center justify-center"
+                        >
+                          <Trophy className="w-3 h-3 mr-1" />
+                          Rank
                         </motion.button>
                       </div>
                     </div>
@@ -249,37 +332,62 @@ const RobloxLearning: React.FC = () => {
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"
+            className="text-3xl font-bold mb-4 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"
           >
             🚀 Ready for Adventure?
           </motion.h3>
-          <motion.a
-            href="https://www.roblox.com/games/your-game-id"
-            target="_blank"
-            rel="noopener noreferrer"
-            whileHover={{ scale: 1.08, y: -5 }}
-            whileTap={{ scale: 0.95 }}
-            className="group relative inline-flex items-center px-12 py-6 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white font-bold rounded-3xl overflow-hidden shadow-2xl shadow-green-500/25 hover:shadow-green-500/40 transition-all"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="relative z-10 mr-4"
+          <p className="text-slate-300 mb-8 text-lg max-w-2xl mx-auto">
+            Join thousands of students learning environmental science through immersive gameplay and real-world challenges!
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <motion.a
+              href="https://youtu.be/M77k0plJlAM"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.95 }}
+              className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold rounded-2xl overflow-hidden shadow-2xl shadow-red-500/25 hover:shadow-red-500/40 transition-all"
             >
-              <Gamepad2 className="w-8 h-8" />
-            </motion.div>
-            <span className="relative z-10 text-2xl mr-4">
-              Launch Eco Universe
-            </span>
-            <motion.div
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="relative z-10"
+              <Play className="w-6 h-6 mr-3" />
+              <span className="text-lg">Watch Demo Video</span>
+              <ExternalLink className="w-5 h-5 ml-3" />
+            </motion.a>
+            
+            <motion.a
+              href="https://www.roblox.com/games/99201565048691/EcoWorld"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.95 }}
+              className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white font-bold rounded-2xl overflow-hidden shadow-2xl shadow-green-500/25 hover:shadow-green-500/40 transition-all"
             >
-              <ExternalLink className="w-6 h-6" />
-            </motion.div>
-          </motion.a>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                className="mr-3"
+              >
+                <Gamepad2 className="w-6 h-6" />
+              </motion.div>
+              <span className="text-lg">Launch Eco Universe</span>
+              <ExternalLink className="w-5 h-5 ml-3" />
+            </motion.a>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="bg-slate-800/30 rounded-xl p-4">
+              <div className="text-2xl font-bold text-green-400 mb-2">10,000+</div>
+              <div className="text-slate-300 text-sm">Active Players</div>
+            </div>
+            <div className="bg-slate-800/30 rounded-xl p-4">
+              <div className="text-2xl font-bold text-blue-400 mb-2">500+</div>
+              <div className="text-slate-300 text-sm">Schools Participating</div>
+            </div>
+            <div className="bg-slate-800/30 rounded-xl p-4">
+              <div className="text-2xl font-bold text-purple-400 mb-2">1M+</div>
+              <div className="text-slate-300 text-sm">Environmental Actions</div>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
