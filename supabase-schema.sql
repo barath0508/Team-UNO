@@ -106,7 +106,7 @@ CREATE TABLE team_members (
 CREATE TABLE team_messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   team_id UUID REFERENCES eco_teams(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   message TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -152,12 +152,12 @@ CREATE POLICY "Users can insert location tasks" ON location_tasks FOR INSERT TO 
 
 -- Eco teams policies
 CREATE POLICY "Users can view all teams" ON eco_teams FOR SELECT TO authenticated;
-CREATE POLICY "Users can create teams" ON eco_teams FOR INSERT WITH CHECK (auth.uid() = created_by);
+CREATE POLICY "Users can create teams" ON eco_teams FOR INSERT TO authenticated WITH CHECK (auth.uid() = created_by);
 
 -- Team members policies
 CREATE POLICY "Users can view team members" ON team_members FOR SELECT TO authenticated;
-CREATE POLICY "Users can join teams" ON team_members FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can leave teams" ON team_members FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Users can join teams" ON team_members FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can leave teams" ON team_members FOR DELETE TO authenticated USING (auth.uid() = user_id);
 
 -- Team messages policies
 CREATE POLICY "Team members can view messages" ON team_messages
