@@ -82,22 +82,22 @@ const Footer: React.FC = () => {
             
             <p className="text-slate-300 leading-relaxed mb-6 max-w-md">
               Transforming environmental education through gamification and real-world action. 
-              Join the movement to create a sustainable future for Punjab and beyond.
+              Join the movement to create a sustainable future for India and beyond.
             </p>
 
             {/* Contact info */}
             <div className="space-y-3">
               <div className="flex items-center text-slate-300">
                 <Mail className="w-5 h-5 text-emerald-400 mr-3" />
-                <span>hello@prakritiwarriors.com</span>
+                <span>hello@teamuno.com</span>
               </div>
               <div className="flex items-center text-slate-300">
                 <Phone className="w-5 h-5 text-emerald-400 mr-3" />
-                <span>+91 98765 43210</span>
+                <span>+91 97908 96599</span>
               </div>
               <div className="flex items-center text-slate-300">
                 <MapPin className="w-5 h-5 text-emerald-400 mr-3" />
-                <span>Chandigarh, Punjab, India</span>
+                <span>Chennai, India</span>
               </div>
             </div>
           </motion.div>

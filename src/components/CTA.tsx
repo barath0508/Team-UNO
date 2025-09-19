@@ -55,7 +55,7 @@ const CTA: React.FC = () => {
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
             Ready to become a{' '}
             <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent">
-              Prakriti Warrior
+              Nature Warrior
             </span>
             ?
           </h2>
