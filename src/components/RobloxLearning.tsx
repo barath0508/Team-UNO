@@ -23,7 +23,7 @@ const RobloxLearning: React.FC = () => {
 
   const gameAreas = [
     {
-      name: 'Solar City',
+      name: 'EcoWorld',
       requiredPoints: 25,
       description: 'Learn about renewable energy and build sustainable cities powered by the sun.',
       lessons: 8,
