@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot } from 'lucide-react';
+import { generateSupportResponse } from '../lib/supportChatbot';
 
 const SupportChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: 'Hi! I\'m your Green Spark assistant. How can I help you today?', sender: 'bot', time: new Date() }
+    { id: 1, text: 'Hi! I\'m EcoBot, your Green Spark AI assistant! 🌱 I can help you with eco missions, earning points, environmental questions, and platform support. How can I assist you today?', sender: 'bot', time: new Date() }
   ]);
   const [inputText, setInputText] = useState('');
 
@@ -16,7 +17,7 @@ const SupportChat: React.FC = () => {
     'Technical support'
   ];
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
     const userMessage = {
@@ -26,19 +27,29 @@ const SupportChat: React.FC = () => {
       time: new Date()
     };
 
-    setMessages([...messages, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInputText('');
 
-    // Simulate bot response
-    setTimeout(() => {
+    // Generate AI response
+    try {
+      const aiResponse = await generateSupportResponse(inputText, newMessages);
       const botResponse = {
-        id: messages.length + 2,
-        text: 'Thanks for your message! Our support team will get back to you shortly. In the meantime, check our FAQ section for quick answers.',
+        id: newMessages.length + 1,
+        text: aiResponse,
         sender: 'bot',
         time: new Date()
       };
       setMessages(prev => [...prev, botResponse]);
-    }, 1000);
+    } catch (error) {
+      const errorResponse = {
+        id: newMessages.length + 1,
+        text: 'Sorry, I\'m having trouble right now. Please try again or contact our support team!',
+        sender: 'bot',
+        time: new Date()
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    }
   };
 
   const handleQuickReply = (reply: string) => {

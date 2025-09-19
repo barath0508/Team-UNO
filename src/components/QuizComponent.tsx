@@ -17,6 +17,8 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ age }) => {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [showSuggestionPrompt, setShowSuggestionPrompt] = useState(false);
+  const [userSuggestion, setUserSuggestion] = useState('');
 
   useEffect(() => {
     loadQuiz();
@@ -50,7 +52,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ age }) => {
 
   const completeQuiz = async () => {
     const finalScore = selectedAnswer === quiz.questions[currentQuestion].correct ? score + 1 : score;
-    const points = finalScore * 10;
+    const points = finalScore * 50;
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -61,7 +63,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ age }) => {
       console.log('Error awarding points:', error);
     }
     
-    setQuizCompleted(true);
+    setShowSuggestionPrompt(true);
   };
 
   if (loading) {
@@ -69,6 +71,70 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ age }) => {
       <div className="text-center py-8">
         <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-slate-400">Generating personalized quiz...</p>
+      </div>
+    );
+  }
+
+  const handleSuggestionSubmit = () => {
+    setShowSuggestionPrompt(false);
+    setQuizCompleted(true);
+  };
+
+  if (showSuggestionPrompt) {
+    return (
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-blue-500/20 to-green-500/20 rounded-3xl blur-xl" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 50 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+          className="relative glass rounded-3xl p-8 border border-purple-500/30"
+        >
+          <div className="text-center mb-6">
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-6xl mb-4"
+            >
+              💡
+            </motion.div>
+            <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-blue-400 to-green-400 bg-clip-text text-transparent">
+              Share Your Ideas!
+            </h3>
+            <p className="text-slate-300 text-lg mb-6">
+              What other methods can you suggest to overcome the environmental problem discussed in this level?
+            </p>
+          </div>
+          
+          <div className="mb-6">
+            <textarea
+              value={userSuggestion}
+              onChange={(e) => setUserSuggestion(e.target.value)}
+              placeholder="Share your creative solutions and ideas here..."
+              className="w-full h-32 bg-slate-800/50 border border-slate-600 rounded-xl p-4 text-white placeholder-slate-400 focus:border-purple-500 focus:outline-none resize-none"
+            />
+          </div>
+          
+          <div className="flex gap-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleSuggestionSubmit()}
+              className="flex-1 bg-slate-700 text-white py-3 rounded-xl font-semibold hover:bg-slate-600 transition-colors"
+            >
+              Skip for Now
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleSuggestionSubmit()}
+              disabled={!userSuggestion.trim()}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:from-purple-600 hover:to-blue-600 transition-all"
+            >
+              Submit Suggestion
+            </motion.button>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -110,7 +176,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ age }) => {
           >
             <div className="text-3xl font-bold mb-2 text-white">Score: {finalScore}/{quiz.questions.length}</div>
             <div className="text-2xl font-bold text-emerald-400 mb-4">
-              🎆 +{finalScore * 10} Eco Points Earned!
+              🎆 +{finalScore * 50} Eco Points Earned!
             </div>
           </motion.div>
           <motion.button
@@ -121,6 +187,8 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ age }) => {
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               setQuizCompleted(false);
+              setShowSuggestionPrompt(false);
+              setUserSuggestion('');
               setCurrentQuestion(0);
               setSelectedAnswer(null);
               setShowResult(false);

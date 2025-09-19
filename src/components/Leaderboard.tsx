@@ -59,7 +59,8 @@ const Leaderboard: React.FC = () => {
   const tabs = [
     { id: 'global', label: 'Global', icon: Globe },
     { id: 'state', label: 'State', icon: MapPin },
-    { id: 'district', label: 'District', icon: Building }
+    { id: 'district', label: 'District', icon: Building },
+    { id: 'teams', label: 'Team Events', icon: Trophy }
   ];
 
   return (
@@ -158,6 +159,84 @@ const Leaderboard: React.FC = () => {
 
           {loading ? (
             <div className="p-8 text-center text-slate-400">Loading...</div>
+          ) : activeTab === 'teams' ? (
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-slate-800/30 rounded-xl p-6">
+                  <h3 className="text-xl font-bold mb-4 text-yellow-400 flex items-center">
+                    <Trophy className="w-6 h-6 mr-2" />
+                    Current Event: Eco Challenge Week
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { team: 'Green Warriors', points: 2450, members: 12 },
+                      { team: 'Eco Defenders', points: 2380, members: 15 },
+                      { team: 'Planet Savers', points: 2290, members: 10 },
+                      { team: 'Nature Squad', points: 2150, members: 8 }
+                    ].map((team, index) => (
+                      <div key={team.team} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center justify-center w-6">
+                            {getRankIcon(index + 1)}
+                          </div>
+                          <div>
+                            <div className="font-semibold">{team.team}</div>
+                            <div className="text-xs text-slate-400">{team.members} members</div>
+                          </div>
+                        </div>
+                        <div className="text-emerald-400 font-bold">{team.points}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-slate-800/30 rounded-xl p-6">
+                  <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center">
+                    <Award className="w-6 h-6 mr-2" />
+                    Top Contributors
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Alex Chen', team: 'Green Warriors', points: 450 },
+                      { name: 'Maya Patel', team: 'Eco Defenders', points: 420 },
+                      { name: 'Sam Johnson', team: 'Planet Savers', points: 380 },
+                      { name: 'Zara Ahmed', team: 'Nature Squad', points: 350 }
+                    ].map((player, index) => (
+                      <div key={player.name} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center justify-center w-6">
+                            {getRankIcon(index + 1)}
+                          </div>
+                          <div>
+                            <div className="font-semibold">{player.name}</div>
+                            <div className="text-xs text-slate-400">{player.team}</div>
+                          </div>
+                        </div>
+                        <div className="text-yellow-400 font-bold">{player.points}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-slate-800/30 rounded-xl p-6">
+                <h3 className="text-xl font-bold mb-4 text-blue-400">Upcoming Events</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {[
+                    { name: 'Clean-Up Championship', date: 'Dec 15-22', prize: '500 pts' },
+                    { name: 'Recycling Race', date: 'Jan 5-12', prize: '750 pts' },
+                    { name: 'Green Innovation Fair', date: 'Jan 20-27', prize: '1000 pts' }
+                  ].map((event, index) => (
+                    <div key={event.name} className="p-4 bg-slate-700/30 rounded-lg text-center">
+                      <div className="text-2xl mb-2">{index === 0 ? '🧹' : index === 1 ? '♻️' : '💡'}</div>
+                      <div className="font-semibold mb-1">{event.name}</div>
+                      <div className="text-sm text-slate-400 mb-2">{event.date}</div>
+                      <div className="text-emerald-400 font-bold">{event.prize}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="divide-y divide-slate-800">
               {leaderboardData.map((user, index) => (
