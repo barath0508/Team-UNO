@@ -106,14 +106,18 @@ const Hero: React.FC = () => {
             />
           </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="group flex items-center px-8 py-4 border border-slate-600 text-slate-300 font-semibold rounded-full hover:border-emerald-400 hover:text-white transition-all duration-300"
-          >
-            <Play className="w-5 h-5 mr-2 group-hover:text-emerald-400" />
-            Watch Demo
-          </motion.button>
+          <motion.a
+  href="https://youtu.be/M77k0plJlAM"
+  target="_blank"
+  rel="noopener noreferrer"
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className="group flex items-center px-8 py-4 border border-slate-600 text-slate-300 font-semibold rounded-full hover:border-emerald-400 hover:text-white transition-all duration-300"
+>
+  <Play className="w-5 h-5 mr-2 group-hover:text-emerald-400" />
+  Watch Demo
+</motion.a>
+
         </motion.div>
 
         <motion.div
